@@ -16,8 +16,8 @@ class Connexio(object):
     def desconecta(self):
         self.db.close()
 
-    def cargaUsuaris(self):
-        sql = "select * from usuarisclase"
-        self.cursor.execute(sql)
-        ResQuery = self.cursor.fetchall()
+    def cargaUsuarisProva(self, username):
+        sql = "SELECT * FROM usuarisclase WHERE username LIKE %s"
+        self.cursor.execute(sql, (username))
+        ResQuery = self.cursor.fetchone()
         return ResQuery
