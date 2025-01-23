@@ -1,5 +1,6 @@
 /* try catch finally
-async await */B
+async await */
+
 
 // CREAR FUNCIONES PARA MANEJAR LOS ERRORES
 /* centralizarla en una única función (recomendable) */
@@ -13,4 +14,16 @@ async await */B
 //Manejo de errorres de la interfaz de usuario. 
 // 
 
+export class Error_Validació extends Error {
+  constructor(avis) {
+    super(avis);
+    this.missatge = "Error en la validació de dades";
+  }
+}
 
+export class Error_API extends Error {
+  constructor(avis) {
+    super(avis);
+    this.missatge = "Error en l'API";
+  }
+}
