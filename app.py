@@ -24,7 +24,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 class Usuari(BaseModel):
     id: int
-    username: str  # Assuming the field is 'username' instead of 'name'
+    username: str 
     password: str
 
 class Token(BaseModel):
@@ -44,11 +44,10 @@ def get_usuaris(username: str):
 def autentificar(username: str, password: str):
     user = get_usuaris(username)
 
-    
     if user and user["password"] == password:
-        return Usuari(**user)  
-
-    return None 
+        return user
+    """sinó, torna un error amb codi 401"""
+    raise HTTPException(status_code=401, detail="Nom o contrasenya invàlid. Verificació ha fallat.  ")
 
 
 def crearToken(data: dict, expires_delta: Optional[timedelta] = None):
