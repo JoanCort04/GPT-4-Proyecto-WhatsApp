@@ -50,6 +50,9 @@ def autentificar(username: str, password: str):
     raise HTTPException(status_code=401, detail="Nom o contrasenya invàlid. Verificació ha fallat.  ")
 
 
+
+
+
 def crearToken(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
     if expires_delta:
