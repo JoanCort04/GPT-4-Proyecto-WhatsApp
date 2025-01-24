@@ -1,4 +1,6 @@
+//JAVADOCS: este modulo se encarga de llamar a la api blablabla nigers
 import { Error_API} from "../error/controlErrores.js";
+
 // el servidor de l'api ha d'estar encés perquè funcioni xd
 
 fetch("http://localhost:5000/llistamics")

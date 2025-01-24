@@ -32,23 +32,43 @@ class Token(BaseModel):
     token_type: str
 
 
-""" per treure el json de tots els usuaris  """
-@app.get("/llistaamics", response_model=Usuari)
-def get_usuaris(username: str):
+# per treure el json de tots els usuaris  """
+@app.get("/llistaamics", response_model=List[Usuari])
+def get_usuaris():
     db.conecta()  
-    usuarios = db.cargaUsuarisProva(username) 
+    usuarios = db.cargaLlistaAmics() 
+    db.desconecta()
     return usuarios
 
+# per treure només un usuari i contrastar la seva informació"""
+@app.get("/login", response_model=Usuari)
+def get_(username: str):
+    db.conecta()  
+    usuari = db.cargaUsuari(username) 
+    db.desconecta()
+    return usuari
 
-@app.post("/grups", response_model=Usuari)
-def autentificar(username: str, password: str):
-    user = get_usuaris(username)
 
-    if user and user["password"] == password:
-        return user
-    """sinó, torna un error amb codi 401"""
-    raise HTTPException(status_code=401, detail="Nom o contrasenya invàlid. Verificació ha fallat.  ")
+@app.post("/grups", response_model=List[Usuari])
+def autentificar(username: str):
+    db.conecta()
+    grupos = db.sacaGruposDelUser(username)
+    db.desconecta()
+    return grupos
+    
+    
+    
+    
 
+    """
+    @app.post("/grups", response_model=Usuari)
+    def autentificar(username: str, password: str):
+        user = get_usuaris(username)
+
+        if user and user["password"] == password:
+            return user
+        raise HTTPException(status_code=401, detail="Nom o contrasenya invàlid. Verificació ha fallat.  ")
+    """
 
 
 

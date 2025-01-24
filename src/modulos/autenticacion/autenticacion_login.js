@@ -2,6 +2,7 @@ import {Error_Validació} from "../error/controlErrores.js";
 import { encriptarContra, verificarContra } from "./encriptacion.js";
 // import { } from "integracion/integracion.js"
 
+//substituir por los datos de verdad con la api
 let usuarios_prueba = [
     { username: "paucortes1paucasesnovescifp.cat", password: "12345678" }, // DNI sin letra, tendria que donar correcte
     { username: "joanpaucasesnovescifp", password: "X1234567" }, // DNI con letra inicial tendria que donar correcte
@@ -25,7 +26,7 @@ function validar_login() {
         }
 
         encriptarContra(password); // Mandar a la API en la siguiente línea con funciones de integracion.js
-    
+        
     } catch (error) {
         if (error instanceof Error_Validació) {
             console.error(error.missatge + ": " + error.avis);
@@ -38,6 +39,8 @@ function validar_login() {
         }
     }
 }
+
+
 
 function validateUsername(username) {
     const nomRegex = /^[a-zA-Z][a-zA-Z0-9_]{3,15}$/;
