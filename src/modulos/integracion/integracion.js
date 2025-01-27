@@ -3,24 +3,30 @@ import { Error_API} from "../error/controlErrores.js";
 
 // el servidor de l'api ha d'estar encés perquè funcioni xd
 
-fetch("http://localhost:5000/llistamics")
-  .then((response) => {
-    if (!response.ok) {
-      throw new Error_API(`API o red aturada`);
-    }
-    return response.json(); // Parse the JSON response
-  })
-  .then((data) => console.log(data)) // Log the received data
-  .catch((error) =>
-    console.error("There was a problem with the fetch operation:", error)
-  ); // Handle errors
+// per conectar-se a l'endpoint en específic 
 
-async function enviaLogin() {
-  let response = await fetch("/article/fetch/post/user", {
-    method: "POST",
+
+async function cridarAPI(endpoint, method = "GET", body = null) {
+  const options = {
+    method,
     headers: {
-      "Content-Type": "application/json;charset=utf-8",
+      "Content-Type": "application/json", 
     },
-    body: JSON.stringify(user),
-  });
+  };
+  if (body) {
+    options.body = JSON.stringify(body);
+  }
+  try {
+    const response = await fetch(`http://localhost:5000/${endpoint}`, options);
+    if (!response.ok) {
+      throw new Error_API(`API o red aturada: ${response.status} - ${response.statusText}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("El fetch ha fallat:", error);
+    throw error; // Torna a llençar l'error per gestionar-lo fora
+  }
 }
+
+
+
