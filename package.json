@@ -17,5 +17,12 @@
   "bugs": {
     "url": "https://github.com/JoanCort04/GPT-4-Proyecto-WhatsApp/issues"
   },
-  "homepage": "https://github.com/JoanCort04/GPT-4-Proyecto-WhatsApp#readme"
+  "homepage": "https://github.com/JoanCort04/GPT-4-Proyecto-WhatsApp#readme",
+  "dependencies": {
+    "@tailwindcss/cli": "^4.0.3",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "tailwindcss": "^1.9.6"
+  }
 }

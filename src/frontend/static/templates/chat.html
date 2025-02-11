@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CHATS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {},
+        },
+      };
+    </script>    
+    <link rel="stylesheet" href="/src/frontend/static/css/chat.css">
+  </head>
+  <body
+    class="bg-gray-900 text-white flex flex-col md:flex-row h-screen relative border border-gray-500"
+  >
+    <!-- Sidebar (Servidores) -->
+    <div
+      class="bg-gray-800 p-3 flex md:flex-col justify-around items-center fixed bottom-0 left-0 right-0 md:static md:w-20 md:h-auto border border-gray-500"
+    >
+     
+    </div>
+
+    <!-- Sidebar (Canales) -->
+    <div class="bg-gray-700 w-64 flex-none p-4 hidden md:block border border-gray-500">
+      <!-- Pestañas para alternar -->
+      <div class="flex justify-around mb-4">
+        <button
+          id="tabFriends"
+          class="text-white font-semibold focus:outline-none"
+        >
+          Amigos
+        </button>
+        <button
+          id="tabGroups"
+          class="text-gray-400 font-semibold focus:outline-none"
+        >
+          Grupos
+        </button>
+      </div>
+      <!-- Lista de chats de amigos -->
+      <div id="friendsList" class="space-y-2 ">
+        <div class="flex space-x-3">
+          <div
+            class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center font-semibold user-trigger cursor-pointer"
+          >
+            U1
+          </div>
+          <div>
+            <div class="text-white font-semibold user-trigger cursor-pointer">
+              Usuario 1
+            </div>
+            <div class="text-gray-300">¡Hola! Todo bien, ¿y tú?</div>
+          </div>
+        </div>
+        <div class="flex space-x-3">
+          <div
+            class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center font-semibold user-trigger cursor-pointer"
+          >
+            U2
+          </div>
+          <div>
+            <div class="text-white font-semibold user-trigger cursor-pointer">
+              Usuario 2
+            </div>
+            <div class="text-gray-300">¡Hola! Todo bien, ¿y tú?</div>
+          </div>
+        </div>
+        <div class="flex space-x-3">
+          <div
+            class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center font-semibold user-trigger cursor-pointer"
+          >
+            U3
+          </div>
+          <div>
+            <div class="text-white font-semibold user-trigger cursor-pointer">
+              Usuario 3
+            </div>
+            <div class="text-gray-300">¡Hola! Todo bien, ¿y tú?</div>
+          </div>
+        </div>
+      </div>
+      <!-- Lista de chats de grupos (inicialmente oculta) -->
+      <div id="groupsList" class="space-y-2 hidden ">
+        <div class="flex space-x-3">
+          <div
+            class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center font-semibold user-trigger cursor-pointer"
+          >
+            G1
+          </div>
+          <div>
+            <div class="text-white font-semibold user-trigger cursor-pointer">
+              Grupo 1
+            </div>
+            <div class="text-gray-300">¡Grupo activo!</div>
+          </div>
+        </div>
+        <div class="flex space-x-3">
+          <div
+            class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center font-semibold user-trigger cursor-pointer"
+          >
+            G2
+          </div>
+          <div>
+            <div class="text-white font-semibold user-trigger cursor-pointer">
+              Grupo 2
+            </div>
+            <div class="text-gray-300">Conversación grupal</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Área Principal (Chat) -->
+    <div
+      id="chatArea"
+      class="flex-1 flex flex-col pb-20 md:pb-0 transition-all duration-300 border border-gray-500"
+    >
+      <!-- Encabezado del Chat -->
+      <div class="bg-gray-800 p-4 flex justify-between items-center border-gray-500">
+        <div class="text-white text-lg font-semibold">Chat x</div>
+      </div>
+      <!-- Área de mensajes -->
+      <div class="flex-1 bg-gray-600 p-4 overflow-y-auto space-y-4 border-gray-500">
+        <div class="flex space-x-3">
+          <div
+            class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center font-semibold user-trigger cursor-pointer"
+          >
+            U1
+          </div>
+          <div>
+            <div class="text-white font-semibold user-trigger cursor-pointer">
+              Usuario 1
+            </div>
+            <div class="text-gray-300">Hola a todos, ¿cómo están?</div>
+          </div>
+        </div>
+        <div class="flex space-x-3">
+          <div
+            class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center font-semibold user-trigger cursor-pointer"
+          >
+            U2
+          </div>
+          <div>
+            <div class="text-white font-semibold user-trigger cursor-pointer">
+              Usuario 2
+            </div>
+            <div class="text-gray-300">¡Hola! Todo bien, ¿y tú?</div>
+          </div>
+        </div>
+      </div>
+      <!-- Entrada de texto -->
+      <div class="bg-gray-800 p-4 border-gray-500">
+        <input
+          type="text"
+          class="w-full bg-gray-700 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 "
+          placeholder="Escribe un mensaje..."
+        />
+      </div>
+    </div>
+
+    <!-- Sidebar Derecho (Información del Usuario) -->
+    <div
+      id="rightSidebar"
+      class=" w-64 p-4 fixed top-0 right-0 h-full z-50 transform translate-x-full transition-transform duration-300 border-gray-500"
+    >
+      <!-- Botón para cerrar el sidebar (posicionado en la esquina superior derecha) -->
+      <button id="closeRightSidebar" class="text-white absolute top-4 right-4">
+        Cerrar
+      </button>
+      <!-- Contenedor para centrar el contenido vertical y horizontalmente -->
+      <div class="h-full flex flex-col items-center justify-center border-gray-500">
+        <!-- Imagen de perfil centrada -->
+        <div class="flex justify-center mb-4">
+          <img
+            src="https://via.placeholder.com/150"
+            alt="Foto de perfil"
+            class="w-24 h-24 rounded-full"
+          />
+        </div>
+        <!-- Título centrado -->
+        <div class="text-white text-lg font-semibold mb-6 text-center ">
+          Información del Usuario
+        </div>
+        <!-- Información del usuario -->
+        <div id="userInfo" class="space-y-2 text-center">
+          <div class="text-gray-400">Detalles del usuario seleccionado...</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Función para mostrar el sidebar derecho
+      function showRightSidebar(userData) {
+        const rightSidebar = document.getElementById("rightSidebar");
+        const chatArea = document.getElementById("chatArea");
+
+        // Actualiza la información del usuario (puedes cargar datos dinámicos)
+        document.getElementById(
+          "userInfo"
+        ).innerHTML = `<div class="text-gray-400">${userData}</div>`;
+
+        if (window.innerWidth < 768) {
+          chatArea.classList.add("hidden");
+          rightSidebar.classList.remove("w-64");
+          rightSidebar.classList.add("w-full");
+        } else {
+          chatArea.classList.add("mr-64");
+          rightSidebar.classList.remove("w-full");
+          rightSidebar.classList.add("w-64");
+        }
+
+        rightSidebar.classList.remove("translate-x-full");
+      }
+
+      // Función para ocultar el sidebar derecho
+      function hideRightSidebar() {
+        const rightSidebar = document.getElementById("rightSidebar");
+        const chatArea = document.getElementById("chatArea");
+
+        rightSidebar.classList.add("translate-x-full");
+
+        if (window.innerWidth < 768) {
+          chatArea.classList.remove("hidden");
+        } else {
+          chatArea.classList.remove("mr-64");
+        }
+      }
+
+      // Asigna el evento de clic a cada elemento con la clase "user-trigger"
+      document.querySelectorAll(".user-trigger").forEach((el) => {
+        el.addEventListener("click", () => {
+          const userData = el.textContent;
+          showRightSidebar(`Información de ${userData}`);
+        });
+      });
+
+      // Evento para cerrar el sidebar derecho
+      document
+        .getElementById("closeRightSidebar")
+        .addEventListener("click", hideRightSidebar);
+
+      // Alternar entre chats de amigos y grupos
+      document
+        .getElementById("tabFriends")
+        .addEventListener("click", function () {
+          document.getElementById("friendsList").classList.remove("hidden");
+          document.getElementById("groupsList").classList.add("hidden");
+          this.classList.add("text-white");
+          this.classList.remove("text-gray-400");
+          document.getElementById("tabGroups").classList.add("text-gray-400");
+          document.getElementById("tabGroups").classList.remove("text-white");
+        });
+
+      document
+        .getElementById("tabGroups")
+        .addEventListener("click", function () {
+          document.getElementById("friendsList").classList.add("hidden");
+          document.getElementById("groupsList").classList.remove("hidden");
+          this.classList.add("text-white");
+          this.classList.remove("text-gray-400");
+          document.getElementById("tabFriends").classList.add("text-gray-400");
+          document.getElementById("tabFriends").classList.remove("text-white");
+        });
+    </script>
+  </body>
+</html>
