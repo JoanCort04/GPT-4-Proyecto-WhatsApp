@@ -9,7 +9,6 @@ body {
     font-family: 'Outfit', sans-serif;
 }
 
-  /* Añadir estas reglas CSS */
   .slider {
     transition: background-color 0.3s;
   }
