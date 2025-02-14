@@ -1,33 +1,112 @@
 <!DOCTYPE html>
 <html lang="es">
-
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CHATS</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="jquery-3.7.1.min.js"></script>
+    <link rel="stylesheet" href="../css/fonts.css" />
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {},
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              negre: "#000000",
+              "blau-fosc": "#0C1821",
+              "blau-mig": "#1B2A41",
+              "blau-clar": "#324A5F",
+              "gris-clar": "#CCC9DC",
+              "blau-molt-clar": "#E2EAFC",
+              "blau-pastel-1": "#D7E3FC",
+              "blau-pastel-2": "#CCDBFD",
+              "blau-pastel-3": "#C1D3FE",
+              "blau-pastel-4": "#B6CCFE",
+              "blau-pastel-5": "#ABC4FF",
             },
-        };
+          },
+        },
+      };
     </script>
-<link rel="stylesheet" href="/src/frontend/static/css/home.css">
-</head>
-<body> 
-    <header class="flex bg-blue-900 " >
-        <image> 
-            <link class="justify-start" rel="stylesheet"
-                href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=home" />
-        </image>
-        <ul>
-            <li>Lol</li>
-            <li></li>
-            <li></li>
+    <link rel="stylesheet" href="/src/frontend/static/css/home.css" />
+  </head>
+
+  <body class="h-screen bg-blau-molt-clar text-negre dark:bg-blau-fosc dark:text-gris-clar flex flex-col justify-between">
+    
+    <header class="flex items-center justify-between h-16 px-4 bg-blau-pastel-1 dark:bg-blau-mig border border-blau-pastel-3 dark:border-blau-clar">
+      <div class="flex items-center">
+        <img class="h-50 2-5" src="../img/logo1.webp" alt="Logo" />
+        <ul class="flex flex-row items-center text-3xl font-outfit ml-4">
+          <li class="mx-4">Login</li>
         </ul>
+      </div>
+      
+      <div class="flex items-center gap-2">
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" id="themeToggle" class="sr-only peer">
+          <div class="w-11 h-6 bg-blau-pastel-3 rounded-full peer dark:bg-blau-mig peer-focus:ring-4 peer-focus:ring-blau-pastel-2 dark:peer-focus:ring-blau-pastel-4 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-blau-pastel-4 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-blau-clar peer-checked:bg-blau-pastel-5 dark:peer-checked:bg-blau-clar"></div>
+        </label>
+        
+        <span id="themeText" class="text-sm font-medium text-blau-fosc dark:text-gris-clar font-outfit">Modo oscuro</span>
+        
+      </div>
     </header>
+¡
+    <main class="flex-grow flex flex-col justify-center">
+      <section class="flex items-center justify-center px-4 py-8 bg-blau-pastel-2 dark:bg-blau-mig border border-blau-pastel-3 dark:border-blau-clar">
+        <div class="max-w-screen-xl mx-auto lg:grid lg:grid-cols-12 gap-4">
+          <div class="lg:col-span-7 flex flex-col justify-center">
+            <h1 class="mb-4 text-4xl font-extrabold tracking-tight leading-none md:text-5xl xl:text-6xl font-parkinsans text-blau-fosc dark:text-blau-molt-clar">
+              Capybara Chat
+            </h1>
+            <p class="mb-6 text-lg font-light text-blau-clar dark:text-blau-pastel-3 font-gabarito">
+              Cool, very nice app for messages
+            </p>
+            <div class="flex space-x-4">
+              <a href="#" class="inline-flex items-center justify-center px-5 py-3 text-base font-medium text-white bg-blau-clar hover:bg-blau-mig focus:ring-4 focus:ring-blau-pastel-4 dark:focus:ring-blau-pastel-2 font-outfit">
+                Get started
+                <svg class="w-5 h-5 ml-2 -mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                  <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                </svg>
+              </a>
+              <a href="#" class="inline-flex items-center justify-center px-5 py-3 text-base font-medium text-blau-fosc bg-blau-pastel-4 border border-blau-pastel-3 rounded-lg hover:bg-blau-pastel-5 focus:ring-4 focus:ring-blau-pastel-2 dark:text-blau-molt-clar dark:bg-blau-clar dark:border-blau-mig dark:hover:bg-blau-mig dark:focus:ring-blau-pastel-3 font-outfit">
+                Speak to Joan and Pau
+              </a>
+            </div>
+          </div>
+          <div class="hidden lg:flex lg:col-span-5">
+            <img class="w-full rounded" src="../img/feliz.jpg" alt="" />
+          </div>
+        </div>
+      </section>
 
 
-</body>
+      <div class="flex justify-center m-4 space-x-4">
+        <a href="#" class="inline-flex items-center justify-center px-5 py-3 text-base font-medium text-white bg-blau-clar rounded-lg hover:bg-blau-mig focus:ring-4 focus:ring-blau-pastel-4 dark:focus:ring-blau-pastel-2 font-gabarito">
+          Download for Android
+        </a>
+        <a href="#" class="inline-flex items-center justify-center px-5 py-3 text-base font-medium text-blau-fosc bg-blau-pastel-4 border border-blau-pastel-3 rounded-lg hover:bg-blau-pastel-5 focus:ring-4 focus:ring-blau-pastel-2 dark:text-blau-molt-clar dark:bg-blau-clar dark:border-blau-mig dark:hover:bg-blau-mig dark:focus:ring-blau-pastel-3 font-gabarito">
+          Try on Browser
+        </a>
+      </div>
+    </main>
+
+
+    <footer class="py-2 text-center font-outfit bg-blau-pastel-1 dark:bg-blau-mig text-blau-clar dark:text-blau-pastel-3 border-t border-blau-pastel-3 dark:border-blau-clar">
+      <p>&copy; 2025 CAPYBARA CHAT</p>
+    </footer>
+
+    <script>
+      const themeToggle = document.getElementById('themeToggle');
+      const themeText = document.getElementById('themeText');
+
+      themeToggle.addEventListener('change', function() {
+        document.documentElement.classList.toggle('dark');
+        themeText.textContent = document.documentElement.classList.contains('dark')
+          ? 'Modo claro'
+          : 'Modo oscuro';
+      });
+    </script>
+  </body>
 </html>

@@ -46,10 +46,15 @@ export async function cridarAPI(endpoint, method = "GET", body = null) {
       const datos = await response.json();
       return datos;
     } else {
-      throw new Error_API("Error en la solicitud");
+      const errorData = await response.json(); // Parse error response
+      throw new Error_API(
+        `Error en la solicitud: ${response.status} - ${
+          errorData.detail || "Unknown error"
+        }`
+      );
     }
   } catch (error) {
     console.error("Error en la llamada a la API:", error);
-    throw error; 
+    throw error;
   }
 }

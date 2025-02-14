@@ -1,6 +1,9 @@
 import { cridarAPI, transforma_Username_To_ID} from "./integracion.js";
 import fetch from "node-fetch"; // For Node.js
 
+
+
+
 class Mensaje {
   constructor(missatges = {}) {
     this.missatges = missatges;
@@ -76,3 +79,6 @@ async function rebreMissatges(nombreAmigo) {
     console.error("Hubo un error al obtener los mensajes:", error);
   }
 }
+
+rebreMissatges("user2")
+

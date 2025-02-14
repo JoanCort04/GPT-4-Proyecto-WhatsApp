@@ -23,7 +23,7 @@ class Connexio(object):
         self.cursor.execute(sql, (username, password))
         ResQuery = self.cursor.fetchall()
         return ResQuery
-    
+
     def cargaHashedPassword(self, username):
         sql = "SELECT password FROM usuarisclase WHERE username LIKE %s "
         self.cursor.execute(sql, (username))
@@ -38,10 +38,12 @@ class Connexio(object):
 
     # /grupos
     def sacaGruposDelUser(self, username):
-        sql = """SELECT gdu.grupo_id 
-                FROM grupos_de_usuarios gdu
-                JOIN usuarisclase u ON gdu.usuario_id = u.id
-                WHERE u.username = %s" """
+        sql = (
+            " SELECT gdu.grupo_id , rol"
+            " FROM grupos_de_usuarios gdu "
+            " JOIN usuarisclase u ON gdu.usuario_id = u.id "
+            " WHERE u.username = %s "
+        )
         self.cursor.execute(sql, (username))
         ResQuery = self.cursor.fetchall()
         return ResQuery
@@ -61,13 +63,17 @@ class Connexio(object):
         ResQuery = self.cursor.fetchall()
         return ResQuery
 
-    def cargaMensajesAmigo(self, username):
-        sql = ("SELECT emisor_id, receptor_id, contenido, fecha_envio, estado "
-                "FROM mensajes_usuarios mu "
-                "JOIN usuarisclase u ON mu.id = u.id "
-                "WHERE u.username LIKE %s;")
-
-        self.cursor.execute(sql, (username))
+    def cargaMensajesAmigo(self, username, temps):
+        sql = """
+            SELECT emisor_id, receptor_id, contenido, fecha_envio, estado
+            FROM mensajes_usuarios mu
+            JOIN usuarisclase u ON mu.id = u.id
+            WHERE u.username LIKE %s
+            AND fecha_envio < %s
+            ORDER BY fecha_envio DESC
+            LIMIT 10;
+            """
+        self.cursor.execute(sql, (username, temps))
         ResQuery = self.cursor.fetchall()
         return ResQuery
 
@@ -117,11 +123,11 @@ class Connexio(object):
         """
         try:
             self.cursor.execute(sql, (emisor, contenido, fecha, grup))
-            self.db.commit()  # Confirmar la transacción
+            self.db.commit() 
             return True 
         except Exception as e:
             print(f"Error al enviar el mensaje: {e}")
-            self.db.rollback()  # Revertir la transacción en caso de error
+            self.db.rollback() 
             return False
 
     def enviaMensajesAmigos(self, emisor_id, receptor_id, contenido):
@@ -151,5 +157,12 @@ class Connexio(object):
         self.cursor.execute(sql, (missatge_id, missatge_grup))
         update_sql = "UPDATE missatges SET estat = 'vist' WHERE missatge_id = %s and missatge_grup = %s"
         self.cursor.execute(update_sql, (missatge_id, missatge_grup))
+        ResQuery = self.cursor.fetchall()
+        return ResQuery
+
+    def sortir_grup(self, grup_id, usuari_id):
+        update_sql = " DELETE FROM grupos_de_usuarios WHERE grupo_id = %s AND usuario_id LIKE = %s "
+        
+        self.cursor.execute(update_sql, (grup_id, usuari_id))
         ResQuery = self.cursor.fetchall()
         return ResQuery

@@ -18,10 +18,9 @@ export const login = async (username, password) => {
 
         const data = await response.json();
 
-        // Almacenar el token en localStorage
         localStorage.setItem("token", data.token);
 
-        return data.user; // Devuelve la información del usuario
+        return data.user;
     } catch (error) {
         console.error("Error en login:", error);
         throw error;
@@ -55,15 +54,14 @@ export const getUser = async () => {
         }
 
         const data = await response.json();
-        return data.user; // Devuelve la información del usuario
+        return data.user; 
     } catch (error) {
         console.error("Error en getUser:", error);
         throw error;
     }
 };
 
-// Función para cerrar sesión
+
 export const logout = () => {
-    // Eliminar el token de localStorage
     localStorage.removeItem("token");
 };

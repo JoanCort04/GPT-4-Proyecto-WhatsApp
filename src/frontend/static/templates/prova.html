@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CHATS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="../css/fonts.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'negre': '#000000',           // Negro
+                        'blau-fosc': '#0C1821',       // Azul oscuro
+                        'blau-mig': '#1B2A41',         // Azul medio
+                        'blau-clar': '#324A5F',        // Azul claro
+                        'gris-clar': '#CCC9DC',        // Gris claro
+                        'blau-molt-clar': '#E2EAFC',   // Azul muy claro
+                        'blau-pastel-1': '#D7E3FC',    // Azul pastel 1
+                        'blau-pastel-2': '#CCDBFD',    // Azul pastel 2
+                        'blau-pastel-3': '#C1D3FE',    // Azul pastel 3
+                        'blau-pastel-4': '#B6CCFE',    // Azul pastel 4
+                        'blau-pastel-5': '#ABC4FF',    // Azul pastel 5
+                    },
+                },
+            },
+        };
+    </script>
+</head>
+<body class="bg-white">
+
+    <div class="flex justify-center items-center h-screen">
+        <button id="sendMessageBtn"
+            class="bg-blau-molt-clar hover:bg-blau-mig text-molt-clar font-semibold py-2 px-4 rounded-lg ml-2">
+            Botó
+        </button>
+    
+        <button id="sendMessageBtn"
+            class="bg-blau-fosc hover:bg-blau-mig text-white font-semibold py-2 px-4 rounded-lg ml-2">
+            Botó
+        </button>
+    </div>
+
+    
+</body>
+</html>
