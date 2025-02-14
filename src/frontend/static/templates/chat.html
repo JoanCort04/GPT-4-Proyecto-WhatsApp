@@ -10,11 +10,10 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="../css/fonts.css">
-    <script src="https://code.jquery.com/mobile/1.5.0/jquery.mobile.min.js"></script>
-    
-    
+    <script src="https://code.jquery.com/mobile/1.5.0/jquery.mobile.min.js"></script>    
     <script src="../scripts/chat.js"></script>
     <script>
+
         tailwind.config = {
             theme: {
                 screens: {
@@ -41,28 +40,25 @@
             },
         };
     </script>
-</head>
+</head><body class="bg-negre text-gris-clar flex flex-col md:flex-row h-screen relative font-gabarito">
 
-<body class="bg-negre text-gris-clar flex flex-col md:flex-row h-screen relative">
-
-    <header class="md:hidden bg-blau-mig p-4 flex justify-between items-center z-30">
+    <header class="md:hidden bg-blau-mig p-4 flex justify-between items-center z-30 font-outfit">
         <h1 class="text-gris-clar text-lg font-semibold">Capybara Chat</h1>
         <button id="mobileMenu" class="text-gris-clar">
             <i class="fas fa-bars"></i>
         </button>
     </header>
 
-
     <aside id="mobileSidebar"
         class="bg-blau-fosc w-full md:w-64 flex-none p-4 absolute md:relative inset-0 z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300 border border-blau-mig">
-        <div class="mb-4 flex justify-center">
+        <div class="mb-4 flex justify-center font-outfit">
             <button id="createGroupBtn"
                 class="bg-blau-mig hover:bg-blau-clar text-gris-clar font-semibold py-2 px-4 rounded-full w-full flex items-center justify-center">
                 + Crear Grup
             </button>
         </div>
 
-        <nav class="flex justify-around mb-4">
+        <nav class="flex justify-around mb-4 font-outfit">
             <button id="tabFriends" class="text-gris-clar font-semibold focus:outline-none p-3 rounded">
                 Amics
             </button>
@@ -77,7 +73,7 @@
                 placeholder="Cercar..." />
         </div>
 
-        <section id="friendsList" class="space-y-2 rounded p-2">
+        <section id="friendsList" class="space-y-2 rounded p-2 font-parkinsans">
             <div class="flex space-x-3">
                 <div class="w-10 h-10 bg-blau-fosc rounded-full flex items-center justify-center font-semibold">
                     U1
@@ -107,7 +103,7 @@
             </div>
         </section>
 
-        <section id="groupsList" class="hidden bg-white rounded p-2">
+        <section id="groupsList" class="hidden bg-white rounded p-2 font-parkinsans">
             <div class="flex space-x-3 space-y-2">
                 <div class="w-10 h-10 bg-blau-fosc rounded-full flex items-center justify-center font-semibold">
                     G1
@@ -128,7 +124,8 @@
             </div>
         </section>
 
-        <footer class="absolute bottom-0 left-0 w-full bg-blau-mig p-3.5 flex items-center border-t border-blau-fosc">
+        <footer
+            class="absolute bottom-0 left-0 w-full bg-blau-mig p-3.5 flex items-center border-t border-blau-fosc font-parkinsans">
             <img src="https://www.freepik.com/vectors/profile-placeholder" alt="Foto de perfil"
                 class="w-10 h-10 rounded-full" />
             <div class="ml-3">
@@ -140,7 +137,7 @@
 
     <main id="chatArea"
         class="flex-1 flex flex-col pb-16 md:pb-0 transition-all duration-300 border border-blau-fosc relative">
-        <header class="bg-blau-mig p-4 flex justify-between items-center z-10">
+        <header class="bg-blau-mig p-4 flex justify-between items-center z-10 font-outfit">
             <h1 id="chatTitle" class="text-gris-clar text-lg font-semibold">
                 Xat con Usuario 2
             </h1>
@@ -159,9 +156,8 @@
             </div>
         </header>
 
-        <!-- Área de Mensajes Ajustada -->
         <section class="flex-1 bg-blau-fosc p-4 overflow-y-auto space-y-4 pt-4 pb-24 md:pb-4 z-0">
-            <article class="flex space-x-3">
+            <article class="flex space-x-3 font-parkinsans">
                 <div class="w-10 h-10 bg-blau-mig rounded-full flex items-center justify-center font-semibold">
                     U1
                 </div>
@@ -171,7 +167,7 @@
                 </div>
             </article>
 
-            <article class="flex space-x-3">
+            <article class="flex space-x-3 font-parkinsans">
                 <div class="w-10 h-10 bg-blau-mig rounded-full flex items-center justify-center font-semibold">
                     U2
                 </div>
@@ -183,7 +179,7 @@
         </section>
 
         <footer class="bg-blau-mig p-4 fixed md:static bottom-0 left-0 right-0 z-20 border-t border-blau-fosc">
-            <div class="flex items-center">
+            <div class="flex items-center font-gabarito">
                 <input type="text" id="messageInput"
                     class="w-full bg-blau-fosc text-gris-clar p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blau-clar"
                     placeholder="Escriu un missatge..." />
@@ -195,9 +191,8 @@
         </footer>
     </main>
 
-
     <aside id="rightSidebar"
-        class="w-full sm:w-64 p-4 fixed top-0 right-0 h-full z-50 transform translate-x-full transition-transform duration-300 border">
+        class="w-full sm:w-64 p-4 fixed top-0 right-0 h-full z-50 transform translate-x-full transition-transform duration-300 border font-outfit">
         <button id="closeRightSidebar" class="text-gris-clar absolute top-4 right-4">
             Tancar
         </button>
@@ -208,14 +203,13 @@
             <h2 class="text-gris-clar text-lg font-semibold mb-6 text-center">
                 Informació de l'Usuari
             </h2>
-            <div id="userInfo" class="space-y-2 text-center">
+            <div id="userInfo" class="space-y-2 text-center font-parkinsans">
                 <p class="text-blau-clar">
                     Detalls de l'usuari seleccionat...
                 </p>
             </div>
         </div>
     </aside>
-
 
     <script>
         document.getElementById('mobileMenu').addEventListener('click', () => {
