@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    <script>
+        // Comprovar si hi ha el toekn
+        if (!localStorage.getItem("jwt")) {
+            // Si no hay token, redirigir al login
+            window.location.href = "login.html";
+        }
+    </script>
+    <script type="module" src="../templates2/chat.js"></script>
+</head>
+<body>
+    <button id="logoutButton">Logout</button>
+</body>
+</html>

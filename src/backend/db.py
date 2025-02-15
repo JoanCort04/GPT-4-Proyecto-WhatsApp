@@ -4,11 +4,14 @@ import pymysql.cursors # type: ignore
 class Connexio(object):
     def conecta(self):
         self.db = pymysql.connect(
-            host="192.168.193.133",  
+            # host="192.168.193.133",  
+            host="localhost",  
             port=3306,
-            user="joancortes",
-            password="43481462P",
-            db="gpt4",
+            # user="joancortes",
+            user="root",
+            # password="43481462P",
+            # db="gpt4",
+            db="whatsapp2425",
             charset="utf8mb4",
             autocommit=True,
             cursorclass=pymysql.cursors.DictCursor,

@@ -4,8 +4,8 @@ from pydantic import BaseModel # type: ignore
 from jose import JWTError, jwt  # type: ignore # importar pip install python-jose
 from datetime import datetime, timedelta
 from typing import Optional, List
+from fastapi.middleware.cors import CORSMiddleware
 import scrypt
-
 
 import db
 db = db.Connexio()
@@ -40,7 +40,21 @@ class Mensaje(BaseModel):
 
 class Amigo(BaseModel):
     username: str
-    id: int
+    id: int 
+    
+# Bypass politica CORS per iniciar sessió
+origins = [
+    "http://127.0.0.1:5500",  
+]
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Funcionament bàsic 4/5
 @app.patch("/check")
@@ -52,15 +66,16 @@ def cambiaEstadoLeído_(id_missatge: str, estat: str):
     db.desconecta()
     return tick
 
+
 @app.get("/treuID")
 def treuID(username):
     db.conecta()
     ID_Usuari = db.transforma_Username_a_ID(username)
     db.desconecta()
-    return ID_Usuari;
+    return ID_Usuari
+
 
 # Funcionament bàsic 1/5
-# per treure el json de tots els usuaris  """
 @app.get("/llistaamics", response_model=List[Usuari])
 def get_usuaris():
     db.conecta()  
@@ -84,46 +99,111 @@ def verificar_password(password: str, hashed_password: str) -> bool:
 
     return hashed_input_password == stored_key
 
-
 class LoginRequest(BaseModel):
     username: str
     passwd: str
 
-
-@app.post("/login")
+# Login modificat per crear token al iniciar sessio, i recuperar-lo 
+@app.post("/login", response_model=Token)
 def login(login_request: LoginRequest):
     db.conecta()
-
     try:
         username = login_request.username
         passwd = login_request.passwd
 
-        # Load hashed password from the database
         hashed_password = db.cargaHashedPassword(username)
         if not hashed_password:
             raise HTTPException(status_code=401, detail="Invalid username or password")
 
-        # Verify the password
         if not verificar_password(passwd, hashed_password):
             raise HTTPException(status_code=401, detail="Invalid username or password")
 
-        # Load user data
         usuariLogeat = db.cargaUsuari(username, hashed_password)
         if not usuariLogeat:
             raise HTTPException(status_code=401, detail="Invalid username or password")
 
-        return {"user": usuariLogeat}
+        if isinstance(usuariLogeat, list):
+            user_data = usuariLogeat[0]
+        else:
+            user_data = usuariLogeat
 
+        user_id = user_data["id"]
+
+        # Generar el token JWT con expiración
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(
+            data={"sub": username, "id": user_id}, 
+            expires_delta=access_token_expires
+        )
+        
+        return {"access_token": access_token, "token_type": "bearer"}
     except Exception as e:
+        print("Error en /login:", e)
         raise HTTPException(status_code=500, detail=str(e))
-
     finally:
         db.desconecta()
+        
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
 
+def verify_token(token: str = Depends(oauth2_scheme)):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token or expired token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+@app.post("/verify-token")
+def verify_token_endpoint(token_data: dict = Depends(verify_token)):
+    # Si llegamos aquí, el token es válido
+    return {"message": "Token is valid"}
+
+
+#---- 
+# Login anterior
+# @app.post("/login")
+# def login(login_request: LoginRequest):
+#     db.conecta()
+
+#     try:
+#         username = login_request.username
+#         passwd = login_request.passwd
+
+#         # Load hashed password from the database
+#         hashed_password = db.cargaHashedPassword(username)
+#         if not hashed_password:
+#             raise HTTPException(status_code=401, detail="Invalid username or password")
+
+#         # Verify the password
+#         if not verificar_password(passwd, hashed_password):
+#             raise HTTPException(status_code=401, detail="Invalid username or password")
+
+#         # Load user data
+#         usuariLogeat = db.cargaUsuari(username, hashed_password)
+#         if not usuariLogeat:
+#             raise HTTPException(status_code=401, detail="Invalid username or password")
+
+#         return {"user": usuariLogeat}
+
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
+
+#     finally:
+#         db.desconecta()
+#----
 
 # Funcionament bàsic 2/5
-
-
 @app.get("/grups")
 def autentificarGrups(username: str):
     db.conecta()
@@ -131,11 +211,10 @@ def autentificarGrups(username: str):
     db.desconecta()
     return grupos
 
-"""/missatgesAmics: permet enviar missatges a un amic o rebre els missatges d’aquest amic. Inicialment rebrà els 10 missatges més recents, 
-tant els que hem enviat com els que hem rebut, cronològicament. 
-Després el sistema ha de permetre anar rebent els missatges més antics de 10 en 10. 
-Els missatges enviats ha d’indicar l’estat del missatge (enviat, rebut, llegit)"""
-
+# /missatgesAmics: permet enviar missatges a un amic o rebre els missatges d’aquest amic. Inicialment rebrà els 10 missatges més recents, 
+# tant els que hem enviat com els que hem rebut, cronològicament. 
+# Després el sistema ha de permetre anar rebent els missatges més antics de 10 en 10. 
+# Els missatges enviats ha d’indicar l’estat del missatge (enviat, rebut, llegit)
 
 @app.get("/missatgesAmics")
 def recibirMensaje(username: str):
@@ -153,7 +232,6 @@ def recibirMensaje(username: str):
     db.desconecta()  # Disconnect from the database
 
     return mensajes_amigo
-
 
 # Funcionament bàsic 3/5
 @app.post("/missatgesAmics")
