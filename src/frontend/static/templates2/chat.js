@@ -1,18 +1,24 @@
 // chat.js
 import { verificarToken } from "../../modulos/auth.js";
 
-// Asegurarse de que el usuario esté logueado al cargar la página
 document.addEventListener("DOMContentLoaded", () => {
-    // Verificar si el usuario tiene JWT en el localStorage
     const token = localStorage.getItem("jwt");
+
     if (!token) {
-        // Si no tiene JWT, redirigir al login
         window.location.href = "login.html";
-        return; // Detener la ejecución del código siguiente
+        return;
     }
 
-    // Si tiene JWT, proceder con la lógica de la página
-    verificarToken();
+    // Si tiene token, verificarlo antes de mostrar la página
+    verificarToken()
+        .then(isValid => {
+            if (!isValid) {
+                window.location.href = "login.html";
+            } else {
+                // Si el token es válido, mostramos la página
+                document.body.style.display = "block";
+            }
+        });
 
     // Agregar el manejador de eventos para el logout
     const logoutButton = document.getElementById("logoutButton");
@@ -21,11 +27,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-// Función de logout user
+// Función de logout
 export function logout() {
-    // Eliminar el JWT del localStorage
     localStorage.removeItem("jwt");
-
-    // Redirigir al login
     window.location.href = "login.html";
 }
