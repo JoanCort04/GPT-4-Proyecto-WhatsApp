@@ -22,6 +22,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
+  // Obtenir el nom de l'usuari
+  document.getElementById("nombreUsuario").textContent = usuario.username;
+
   // Cargar amigos y grupos
   try {
     const datos = await cargar_Amigos_Grupos(usuario.username);
@@ -42,6 +45,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 // Función para cerrar sesión
+// Important borrar dades al fer logout
 function logout() {
   localStorage.removeItem("jwt"); // Eliminar token JWT
   localStorage.removeItem("usuari"); // Eliminar usuario
