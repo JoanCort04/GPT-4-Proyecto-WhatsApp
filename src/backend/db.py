@@ -1,6 +1,7 @@
 import pymysql # type: ignore
 import pymysql.cursors # type: ignore
 
+
 class Connexio(object):
     def conecta(self):
         self.db = pymysql.connect(
@@ -34,7 +35,7 @@ class Connexio(object):
         return ResQuery['password']
 
     def cargaLlistaAmics(self):
-        sql = "SELECT * FROM usuarisclase"
+        sql = "SELECT id,username FROM usuarisclase"
         self.cursor.execute(sql)
         ResQuery = self.cursor.fetchall()
         return ResQuery

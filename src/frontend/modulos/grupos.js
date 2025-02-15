@@ -1,7 +1,7 @@
 import { cridarAPI, transforma_Username_To_ID } from "./integracion.js";
 
 // Función para cargar los amigos y grupos
-async function cargar_Amigos_Grupos(username) {
+export async function cargar_Amigos_Grupos(username) {
   try {
     const amigos = await cridarAPI("llistaamics");
     const endpointGrupos = `grups?username=${encodeURIComponent(username)}`;
@@ -20,10 +20,10 @@ async function cargar_Amigos_Grupos(username) {
   }
 }
 
-cargar_Amigos_Grupos("user2").then((info) => {
-  if (info) {
-    console.log("Amigos:", info.amigos);
-    console.log("Grupos:", info.grupos);
-  }
-});
+// cargar_Amigos_Grupos("user2").then((info) => {
+//   if (info) {
+//     console.log("Amigos:", info.amigos);
+//     console.log("Grupos:", info.grupos);
+//   }
+// });
 

@@ -29,15 +29,20 @@ export async function transforma_Username_To_ID(username) {
 }
 // modificat funcio per a que tengui un header personalitzat: 
 // "Authorization": `Bearer ${token}`
-export async function cridarAPI(endpoint, method = "GET", body = null, headers = {}) {
+export async function cridarAPI(endpoint, method = "GET", body = null, token = null) {
+  const headers = {
+    "Content-Type": "application/json",
+  };
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
   const options = {
     method,
-    headers: {
-      "Content-Type": "application/json",
-      ...headers,
-    },
+    headers,
   };
-  
+
   if (body) {
     options.body = JSON.stringify(body);
   }
@@ -46,15 +51,10 @@ export async function cridarAPI(endpoint, method = "GET", body = null, headers =
     const response = await fetch(`http://127.0.0.1:8000/${endpoint}`, options);
 
     if (response.ok) {
-      const datos = await response.json();
-      return datos;
+      return await response.json();
     } else {
       const errorData = await response.json();
-      throw new Error(
-        `Error en la solicitud: ${response.status} - ${
-          errorData.detail || "Unknown error"
-        }`
-      );
+      throw new Error(`Error API: ${response.status} - ${errorData.detail || "Desconocido"}`);
     }
   } catch (error) {
     console.error("Error en la llamada a la API:", error);

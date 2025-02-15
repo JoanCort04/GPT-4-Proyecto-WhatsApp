@@ -22,11 +22,16 @@ class RequestBody(BaseModel):
     requested : str
     requested2: str
 
-
-class Usuari(BaseModel):
+#Utilizar aquest nomes per login 
+class UsuariLogin(BaseModel):
     id: int
     username: str 
     password: str
+    
+#Utilizar aquest per obtenir les dades dels usuaris
+class UsuariPublic(BaseModel):
+    id: int
+    username: str 
 
 class Token(BaseModel):
     access_token: str
@@ -76,7 +81,7 @@ def treuID(username):
 
 
 # Funcionament bàsic 1/5
-@app.get("/llistaamics", response_model=List[Usuari])
+@app.get("/llistaamics", response_model=List[UsuariPublic])
 def get_usuaris():
     db.conecta()  
     usuarios = db.cargaLlistaAmics() 

@@ -53,10 +53,16 @@ export async function validar_login(username, password) {
 
   // Guardar el token JWT en localStorage
   localStorage.setItem("jwt", response.access_token);
-  
-  // Guardar otros datos del usuario
-  localStorage.setItem("usuari", JSON.stringify(response));
 
+  // Guardar datos del usuario (incluyendo username)
+  const usuario = {
+    username: username, // Usa el que ingresó el usuario en el login
+    token: response.access_token,
+  };
+
+  localStorage.setItem("usuari", JSON.stringify(usuario));
+
+  // Redirigir al chat
   window.location.href = "chat.html";
 }
 
@@ -70,14 +76,9 @@ export async function verificarToken() {
     return;
   }
 
-  // Llamar al backend para verificar el token. 
-  // Usamos cridarAPI y le pasamos el token en los encabezados
-  const headers = {
-    "Authorization": `Bearer ${token}`, // El token va en el encabezado Authorization
-  };
-
   try {
-    const response = await cridarAPI("verify-token", "POST", { token: token }, headers);
+    // Llamar al backend para verificar el token, pasando el token como header
+    const response = await cridarAPI("verify-token", "POST", { token: token }, token);
 
     if (response.message !== "Token is valid") {
       // Si el token no es válido, redirigir al login
@@ -87,7 +88,8 @@ export async function verificarToken() {
       console.log("Token válido, acceso permitido.");
     }
   } catch (error) {
+    // Manejar el error si ocurre
     console.error("Error al verificar el token:", error);
-    window.location.href = "login.html";  // Si hay error, redirigir al login
+    window.location.href = "login.html"; // Redirigir a login si hay un error
   }
 }
