@@ -3,22 +3,13 @@ import { verificarToken } from "../../modulos/auth.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     const token = localStorage.getItem("jwt");
-
     if (!token) {
         window.location.href = "login.html";
-        return;
+        return; 
     }
 
-    // Si tiene token, verificarlo antes de mostrar la página
-    verificarToken()
-        .then(isValid => {
-            if (!isValid) {
-                window.location.href = "login.html";
-            } else {
-                // Si el token es válido, mostramos la página
-                document.body.style.display = "block";
-            }
-        });
+    // Si el te token, l´hem de verificar
+    verificarToken();
 
     // Agregar el manejador de eventos para el logout
     const logoutButton = document.getElementById("logoutButton");
@@ -27,8 +18,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-// Función de logout
+// Función de logout user
 export function logout() {
+    // Eliminar el JWT del localStorage
     localStorage.removeItem("jwt");
+    // Redirigir al login
     window.location.href = "login.html";
 }
