@@ -6,13 +6,10 @@ class Connexio(object):
     def conecta(self):
         self.db = pymysql.connect(
             host="192.168.193.133",  
-            # host="localhost",  
             port=3306,
             user="joancortes",
-            # user="root",
             password="43481462P",
             db="gpt4",
-            # db="whatsapp2425",
             charset="utf8mb4",
             autocommit=True,
             cursorclass=pymysql.cursors.DictCursor,
@@ -37,6 +34,22 @@ class Connexio(object):
     def cargaLlistaAmics(self):
         sql = "SELECT id,username FROM usuarisclase"
         self.cursor.execute(sql)
+        ResQuery = self.cursor.fetchall()
+        return ResQuery
+
+    def sacaIntegrantesGrupo(self, grupo_id):
+        sql = """
+            SELECT 
+                u.id, u.username
+            FROM 
+                grupos_de_usuarios gdu
+            JOIN 
+                usuarisclase u ON gdu.usuario_id = u.id
+            WHERE 
+                gdu.grupo_id = %s;
+        """
+
+        self.cursor.execute(sql, (grupo_id,))
         ResQuery = self.cursor.fetchall()
         return ResQuery
 
@@ -79,7 +92,7 @@ class Connexio(object):
         resultados = self.cursor.fetchall()
         print(f"Mensajes encontrados: {len(resultados)}")
         return resultados 
-   
+
     def añadirAlGrupo(self, username):
         sql = (
                 "INSERT INTO grupos_de_usuarios (grupo_id, usuario_id) "
@@ -134,17 +147,16 @@ class Connexio(object):
             return False
 
     def enviaMensajesAmigos(self, emisor_id, receptor_id, contenido):
-            sql = """INSERT INTO mensajes_usuarios (emisor_id, receptor_id, contenido) 
+        sql = """INSERT INTO mensajes_usuarios (emisor_id, receptor_id, contenido) 
                      VALUES (%s, %s, %s);"""
-            self.cursor.execute(sql, (emisor_id, receptor_id, contenido))
-     
+        self.cursor.execute(sql, (emisor_id, receptor_id, contenido))
 
     def transforma_Username_a_ID(self,username):
         sql = " SELECT id FROM usuarisclase WHERE username = %s; "
         self.cursor.execute(sql, (username,))
         ResQuery = self.cursor.fetchone()
         return ResQuery
-    
+
     def transforma_Id_a_Username(self,id:int):
         sql = " SELECT username FROM usuarisclase WHERE id = %s; "
         self.cursor.execute(sql, (id,))
@@ -169,7 +181,7 @@ class Connexio(object):
 
     def sortir_grup(self, grup_id, usuari_id):
         update_sql = " DELETE FROM grupos_de_usuarios WHERE grupo_id = %s AND usuario_id LIKE = %s "
-        
+
         self.cursor.execute(update_sql, (grup_id, usuari_id))
         ResQuery = self.cursor.fetchall()
         return ResQuery
