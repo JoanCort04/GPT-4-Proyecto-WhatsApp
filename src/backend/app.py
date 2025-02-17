@@ -22,13 +22,13 @@ class RequestBody(BaseModel):
     requested : str
     requested2: str
 
-#Utilizar aquest nomes per login 
+# Utilizar aquest nomes per login
 class UsuariLogin(BaseModel):
     id: int
     username: str 
     password: str
-    
-#Utilizar aquest per obtenir les dades dels usuaris
+
+# Utilizar aquest per obtenir les dades dels usuaris
 class UsuariPublic(BaseModel):
     id: int
     username: str 
@@ -46,7 +46,7 @@ class Mensaje(BaseModel):
 class Amigo(BaseModel):
     username: str
     id: int 
-    
+
 # Bypass politica CORS per iniciar sessió
 origins = [
     "http://127.0.0.1:5500",
@@ -64,11 +64,10 @@ app.add_middleware(
 
 # Funcionament bàsic 4/5
 @app.patch("/check")
-def cambiaEstadoLeído_(id_missatge: str, estat: str):
+def cambiaEstadoLeído_(missatge_id, emisor_id, receptor_id):
     db.conecta()  
-
-    # afegir la llògica dels tiks. Quan arriba i quan es llegit.
-    tick = db.modificaEstatMissatgeUsuarios(id_missatge, estat)
+    
+    tick = db.marcar_como_recibido_usuario(missatge_id, emisor_id, receptor_id)
     db.desconecta()
     return tick
 
@@ -117,7 +116,7 @@ class LoginRequest(BaseModel):
     username: str
     passwd: str
 
-# Login modificat per crear token al iniciar sessio, i recuperar-lo 
+# Login modificat per crear token al iniciar sessio, i recuperar-lo
 @app.post("/login", response_model=Token)
 def login(login_request: LoginRequest):
     db.conecta()
@@ -156,7 +155,7 @@ def login(login_request: LoginRequest):
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         db.desconecta()
-        
+
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
     if expires_delta:
@@ -184,7 +183,7 @@ def verify_token_endpoint(token_data: dict = Depends(verify_token)):
     return {"message": "Token is valid"}
 
 
-#---- 
+# ----
 # Login anterior
 # @app.post("/login")
 # def login(login_request: LoginRequest):
@@ -215,15 +214,27 @@ def verify_token_endpoint(token_data: dict = Depends(verify_token)):
 
 #     finally:
 #         db.desconecta()
-#----
+# ----
 
-# Funcionament bàsic 2/5
+
 @app.get("/grups")
 def autentificarGrups(username: str):
-    db.conecta()
-    grupos = db.sacaGruposDelUser(username) 
-    db.desconecta()
-    return grupos
+    db.conecta()  # Conecta a la base de datos
+
+    # Obtener los grupos del usuario
+    grupos = db.sacaGruposDelUser(username)
+    if not grupos:
+        db.desconecta()
+        raise HTTPException(
+            status_code=404, detail="El usuario no pertenece a ningún grupo"
+        )
+
+    grupo_id = grupos[0]["grupo_id"]
+    integrantes = db.sacaIntegrantesGrupo(grupo_id)
+
+    db.desconecta() 
+    
+    return {"grupos": grupos, "integrantes": integrantes}
 
 
 # Lo seu tendria que ser que emisor/receptor id siguin parametres int
@@ -242,6 +253,8 @@ def recibirMensaje(emisor_id:int, receptor_id:int):
     db.desconecta()
     
     return chatAmic
+
+
 
 # Funcionament bàsic 3/5
 @app.post("/missatgesAmics")
