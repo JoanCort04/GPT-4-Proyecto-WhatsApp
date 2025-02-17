@@ -87,7 +87,7 @@ JOIN
         return ResQuery
 
     def cargaMensajesAmigos(self):
-        sql = """SELECT emisor_id, receptor_id, contenido, fecha_envio, estado FROM  mensajes_usuarios mu 
+        sql = """SELECT emisor_id, receptor_id, contenido, fecha_envio, estat FROM  mensajes_usuarios mu 
                 JOIN usuarisclase u ON mu.id = u.id"""
         self.cursor.execute(sql)
         ResQuery = self.cursor.fetchall()
@@ -95,11 +95,11 @@ JOIN
 
     def cargaMensajesAmigo(self, emisor_id, receptor_id):
         sql = """
-            SELECT emisor_id, receptor_id, contenido, fecha_envio, estado
+            SELECT emisor_id, receptor_id, contenido, fecha_envio, estat
             FROM mensajes_usuarios
             WHERE (emisor_id = %s AND receptor_id = %s) 
             OR (emisor_id = %s AND receptor_id = %s)
-            ORDER BY fecha_envio DESC;
+            ORDER BY fecha_envio ASC;
         """
         self.cursor.execute(sql, (emisor_id, receptor_id, receptor_id, emisor_id))
         resultados = self.cursor.fetchall()
@@ -187,7 +187,7 @@ JOIN
 
     def modificaEstatMissatgeUsuarios(self, estat, missatge_id):
         sql = """ UPDATE mensajes_usuarios 
-                SET estado = "'%s'"
+                SET estat = "'%s'"
                 WHERE id LIKE '%s' """
         self.cursor.execute(sql, (estat, missatge_id))
         ResQuery = self.cursor.fetchone()

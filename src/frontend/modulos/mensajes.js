@@ -1,6 +1,5 @@
 import { cridarAPI, transforma_Username_To_ID } from "./integracion.js";
 
-
 class Mensaje {
   constructor(missatges = {}) {
     this.missatges = missatges;
@@ -70,7 +69,8 @@ export async function rebreMissatges(nombreAmigo) {
     const mensajes = await getMissatgeUsuari(emisor_id, receptor_id);
     const missatgesInstance = new Mensaje({ [nombreAmigo]: mensajes });
 
-    const mensajesLimitados = missatgesInstance.rebreMissatgesAntics(nombreAmigo);
+    const mensajesLimitados =
+      missatgesInstance.rebreMissatgesAntics(nombreAmigo);
 
     return mensajesLimitados;
   } catch (error) {
@@ -78,6 +78,3 @@ export async function rebreMissatges(nombreAmigo) {
     return [];
   }
 }
-
-
-
