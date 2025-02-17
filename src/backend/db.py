@@ -93,15 +93,16 @@ JOIN
         ResQuery = self.cursor.fetchall()
         return ResQuery
 
-    def cargaMensajesAmigo(self, emisor_id, receptor_id):
+    def cargaMensajesAmigo(self, emisor_id, receptor_id, tiempo):
         sql = """
-            SELECT emisor_id, receptor_id, contenido, fecha_envio, estat
-            FROM mensajes_usuarios
-            WHERE (emisor_id = %s AND receptor_id = %s) 
-            OR (emisor_id = %s AND receptor_id = %s)
-            ORDER BY fecha_envio ASC;
+        SELECT emisor_id, receptor_id, contenido, fecha_envio, estat
+        FROM mensajes_usuarios
+        WHERE ((emisor_id = %s AND receptor_id = %s) OR (emisor_id = %s AND receptor_id = %s))
+        AND fecha_envio < %s
+        ORDER BY fecha_envio DESC
+        LIMIT 10;
         """
-        self.cursor.execute(sql, (emisor_id, receptor_id, receptor_id, emisor_id))
+        self.cursor.execute(sql, (emisor_id, receptor_id, receptor_id, emisor_id, tiempo))
         resultados = self.cursor.fetchall()
         print(f"Mensajes encontrados: {len(resultados)}")
         return resultados 
@@ -163,7 +164,6 @@ JOIN
 
         return {"status": "success", "message": "Mensaje enviado y marcado como 'rebut'"}
 
-    
     def enviaMensajesAmigos(self, emisor_id, receptor_id, contenido):
         sql = """ 
         INSERT INTO mensajes_usuarios (emisor_id, receptor_id, contenido) 

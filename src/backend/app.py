@@ -233,7 +233,7 @@ def autentificarGrups(username: str):
     integrantes = db.sacaIntegrantesGrupo(grupo_id)
 
     db.desconecta() 
-    
+
     return {"grupos": grupos, "integrantes": integrantes}
 
 
@@ -242,18 +242,29 @@ def autentificarGrups(username: str):
 # solucions eliminar el usuario amb id 0,o canviarli la id a l'ultim
 # per ara no utlizar usuario id 0 per fer proves
 @app.get("/missatgesAmics")
-def recibirMensaje(emisor_id:int, receptor_id:int):
-    db.conecta()
+def recibirMensaje(
+    emisor_id: int, receptor_id: int
+):
+    db.conecta()  # Conecta a la base de datos
 
-    # Aseguramos que la validación no rechace el 0
+    # Validamos los IDs; asumimos que 0 es un valor válido
     if emisor_id is None or receptor_id is None:
         return {"error": "Emisor o receptor no válidos"}
-    
-    chatAmic = db.cargaMensajesAmigo(emisor_id, receptor_id)
-    db.desconecta()
-    
-    return chatAmic
 
+    # Si no se proporciona last_time, usamos la fecha y hora actual para obtener los mensajes más recientes
+    last_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    # Se obtienen 10 mensajes anteriores a 'last_time'
+    chatAmic = db.cargaMensajesAmigo(emisor_id, receptor_id, last_time)
+
+    db.desconecta()  # Desconecta de la base de datos
+
+    # Si se han obtenido mensajes, actualizamos el cursor usando la fecha_envio del último mensaje de este lote
+    new_last_time = None
+    if chatAmic:
+        new_last_time = chatAmic[-1]["fecha_envio"]
+
+    return {"messages": chatAmic, "last_time": new_last_time}
 
 
 # Funcionament bàsic 3/5
