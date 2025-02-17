@@ -1,6 +1,6 @@
 import { verificarToken } from "../../modulos/auth.js";
 import { cargarLlistaAmics } from "../../modulos/grupos.js";
-import { rebreMissatges } from "../../modulos/mensajes.js";
+import { rebreMissatges,enviarMissatges } from "../../modulos/mensajes.js";
 import { transforma_ID_To_Username } from "../../modulos/integracion.js";
 
 // --- Variables Globales
@@ -64,7 +64,12 @@ async function mostrarMensajesEnChat(mensajes) {
       // Fetch the sender's username using the emisor_id (ID of the sender)
       const username = await transforma_ID_To_Username(mensaje.emisor_id);
 
-      div.innerHTML = `<strong>${username}:</strong> ${mensaje.contenido}`;
+      // Obtener la fecha del mensaje (asegurándote de que está en el formato adecuado)
+      const fecha = new Date(mensaje.fecha_envio);  // Asegúrate de que 'fecha_envio' existe
+      const fechaFormateada = fecha.toLocaleString();  // Formatear la fecha en un formato legible
+
+      // Mostrar mensaje con la fecha de envío
+      div.innerHTML = `<strong>${username}:</strong> ${mensaje.contenido} <span class="fecha">(${fechaFormateada})</span>`;
     } catch (error) {
       console.error("Error getting username for emisor_id:", mensaje.emisor_id, error);
       div.innerHTML = `<strong>Unknown User:</strong> ${mensaje.contenido}`;  // Fallback
@@ -73,8 +78,6 @@ async function mostrarMensajesEnChat(mensajes) {
     contenedorMensajes.appendChild(div);
   }
 }
-
-
 
 // --- Mostrar lista de amigos y cargar mensajes al hacer clic
 function mostrarLista(lista, idElemento) {
@@ -103,5 +106,24 @@ function mostrarLista(lista, idElemento) {
   });
 }
 
+// --- Enviar mensaje al usuario seleccionado
+document.getElementById("enviarMensajeButton")?.addEventListener("click", async () => {
+  if (!usuarioSeleccionado) {
+    console.error("No se ha seleccionado ningún usuario.");
+    return;
+  }
 
+  const contenidoMensaje = document.getElementById("contenidoMensaje").value;  // Suponiendo que tienes un input para el contenido del mensaje
+  if (!contenidoMensaje) {
+    console.error("El mensaje está vacío.");
+    return;
+  }
 
+  try {
+    await enviarMissatges(usuarioSeleccionado, contenidoMensaje);
+    console.log("Mensaje enviado a:", usuarioSeleccionado);
+    document.getElementById("contenidoMensaje").value = ""; // Limpiar el campo de mensaje
+  } catch (error) {
+    console.error("Error al enviar el mensaje:", error);
+  }
+});

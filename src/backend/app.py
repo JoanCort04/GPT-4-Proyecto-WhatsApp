@@ -246,10 +246,14 @@ def recibirMensaje(emisor_id:int, receptor_id:int):
 # Funcionament bàsic 3/5
 @app.post("/missatgesAmics")
 def enviarMensaje(mensaje: Mensaje):
-    db.conecta()
-    result = db.enviaMensajesAmigos(mensaje.emisor_id, mensaje.receptor_id, mensaje.contenido)
-    db.desconecta()
-    return "Missatge enviat" 
+    try:
+        db.conecta()
+        result = db.enviaMensajesAmigos(mensaje.emisor_id, mensaje.receptor_id, mensaje.contenido)
+        db.desconecta()
+        return {"message": "Missatge enviat"}
+    except Exception as e:
+        db.desconecta()
+        return {"error": f"An error occurred: {str(e)}"}
 
 
 """"

@@ -5,14 +5,14 @@ import pymysql.cursors # type: ignore
 class Connexio(object):
     def conecta(self):
         self.db = pymysql.connect(
-            # host="192.168.193.133",  
-            host="localhost",  
+            host="192.168.193.133",  
+            # host="localhost",  
             port=3306,
-            # user="joancortes",
-            user="root",
-            # password="43481462P",
-            # db="gpt4",
-            db="whatsapp2425",
+            user="joancortes",
+            # user="root",
+            password="43481462P",
+            db="gpt4",
+            # db="whatsapp2425",
             charset="utf8mb4",
             autocommit=True,
             cursorclass=pymysql.cursors.DictCursor,
@@ -61,7 +61,7 @@ class Connexio(object):
         return ResQuery
 
     def cargaMensajesAmigos(self):
-        sql = """SELECT emisor_id, receptor_id, contenido, fecha_envio, estado FROM  mensajes_usuarios mu 
+        sql = """SELECT emisor_id, receptor_id, contenido, fecha_envio, estat FROM  mensajes_usuarios mu 
                 JOIN usuarisclase u ON mu.id = u.id"""
         self.cursor.execute(sql)
         ResQuery = self.cursor.fetchall()
@@ -69,11 +69,11 @@ class Connexio(object):
 
     def cargaMensajesAmigo(self, emisor_id, receptor_id):
         sql = """
-            SELECT emisor_id, receptor_id, contenido, fecha_envio, estado
+            SELECT emisor_id, receptor_id, contenido, fecha_envio, estat
             FROM mensajes_usuarios
             WHERE (emisor_id = %s AND receptor_id = %s) 
             OR (emisor_id = %s AND receptor_id = %s)
-            ORDER BY fecha_envio DESC;
+            ORDER BY fecha_envio ASC;
         """
         self.cursor.execute(sql, (emisor_id, receptor_id, receptor_id, emisor_id))
         resultados = self.cursor.fetchall()
@@ -134,11 +134,10 @@ class Connexio(object):
             return False
 
     def enviaMensajesAmigos(self, emisor_id, receptor_id, contenido):
-        sql = """ INSERT INTO mensajes_usuarios (emisor_id, receptor_id, contenido) 
-        VALUES (%s, %s, %s); """
-        self.cursor.execute(sql, (emisor_id, receptor_id, contenido))
-        ResQuery = self.cursor.fetchall()
-        return ResQuery
+            sql = """INSERT INTO mensajes_usuarios (emisor_id, receptor_id, contenido) 
+                     VALUES (%s, %s, %s);"""
+            self.cursor.execute(sql, (emisor_id, receptor_id, contenido))
+     
 
     def transforma_Username_a_ID(self,username):
         sql = " SELECT id FROM usuarisclase WHERE username = %s; "
@@ -154,7 +153,7 @@ class Connexio(object):
 
     def modificaEstatMissatgeUsuarios(self, estat, missatge_id):
         sql = """ UPDATE mensajes_usuarios 
-                SET estado = "'%s'"
+                SET estat = "'%s'"
                 WHERE id LIKE '%s' """
         self.cursor.execute(sql, (estat, missatge_id))
         ResQuery = self.cursor.fetchone()
