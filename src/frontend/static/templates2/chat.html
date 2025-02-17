@@ -1,26 +1,184 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Chat</title>
-        <script type="module" src="../templates2/chat.js"></script>
-    </head>
-    <body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat</title>
+    <script type="module" src="../templates2/chat.js"></script>
+    <style>
+      /* Estilo general de la página */
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f9;
+        color: #333;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        height: 100vh;
+      }
+
+      h2 {
+        color: #2c3e50;
+      }
+
+      /* Contenedor general de la página */
+      .containerGeneral {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        height: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      /* Sidebar para usuarios y grupos (izquierda) */
+      #sidebar {
+        width: 250px;
+        padding: 20px;
+        background-color: #fff;
+        border-right: 1px solid #ccc;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      #sidebar h2 {
+        font-size: 1.2em;
+        color: #2980b9;
+      }
+
+      #sidebar ul {
+        list-style-type: none;
+        padding: 0;
+        max-height: 300px;  /* Establece un alto fijo */
+        overflow-y: auto;   /* Activa el scroll vertical */
+      }
+
+      #sidebar li {
+        padding: 10px;
+        margin-bottom: 5px;
+        background-color: #ecf0f1;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      #sidebar li:hover {
+        background-color: #bdc3c7;
+      }
+
+      /* Contenedor de chat (derecha) */
+      #divChat {
+        flex-grow: 1;
+        padding: 20px;
+        background-color: #fff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 5px;
+      }
+
+      #divChat h2 {
+        font-size: 1.2em;
+        color: #2980b9;
+      }
+
+      #contenedorMensajes {
+        width: 100%;
+        height: 300px;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        margin-top: 20px;
+        padding: 10px;
+        background-color: #fff;
+        border-radius: 5px;
+      }
+
+      /* Estilo para los mensajes */
+      .mensaje {
+        margin-bottom: 10px;
+        padding: 8px;
+        background-color: #ecf0f1;
+        border-radius: 5px;
+      }
+
+      .mensaje strong {
+        color: #2980b9;
+      }
+
+      .mensaje .fecha {
+        font-size: 0.9em;
+        color: #95a5a6;
+        margin-left: 10px;
+      }
+
+      /* Estilo para el área de texto */
+      textarea {
+        width: 80%;
+        max-width: 600px;
+        height: 100px;
+        padding: 10px;
+        font-size: 16px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        margin-top: 10px;
+        box-sizing: border-box;
+        resize: none;
+      }
+
+      /* Estilo para el botón de enviar mensaje */
+      button {
+        padding: 10px 15px;
+        font-size: 16px;
+        cursor: pointer;
+        background-color: #3498db;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        margin-top: 10px;
+      }
+
+      button:hover {
+        background-color: #2980b9;
+      }
+
+      /* Estilo para el botón de logout */
+      #logoutButton {
+        margin-top: 20px;
+        background-color: #e74c3c;
+      }
+
+      #logoutButton:hover {
+        background-color: #c0392b;
+      }
+
+      /* Estilo para el nombre de usuario */
+      #nombreUsuario {
+        color: #2980b9;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="containerGeneral">
+      <!-- Sidebar (Lista de usuarios y grupos) -->
+      <div id="sidebar">
         <h2>Usuari, <span id="nombreUsuario"></span></h2>
         <button id="logoutButton">Logout</button>
 
         <h2>Lista de Amigos</h2>
-        <ul id="listaAmigos"></ul>
-
+        <ul id="listaAmigos">
+       
         <h2>Lista de grupos</h2>
         <ul id="listaGrupos"></ul>
+      </div>
 
+      <!-- Área de chat (Mensajes, textarea y botón) -->
+      <div id="divChat">
         <h2>Missatges</h2>
         <div id="contenedorMensajes"></div>
 
         <!-- Sección para escribir y enviar mensajes -->
-        <textarea id="contenidoMensaje" placeholder="Escribe tu mensaje aquí..."></textarea><br>
+        <textarea id="contenidoMensaje" placeholder="Escribe tu mensaje aquí..."></textarea><br />
         <button id="enviarMensajeButton">Enviar Mensaje</button>
-    </body>
+      </div>
+    </div>
+  </body>
 </html>
