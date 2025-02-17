@@ -23,12 +23,21 @@ class Mensaje {
 async function getMissatgeUsuari(emisor_id, receptor_id) {
   const endpoint = `missatgesAmics?emisor_id=${emisor_id}&receptor_id=${receptor_id}`;
   try {
-    return await cridarAPI(endpoint, "GET");
+    const result = await cridarAPI(endpoint, "GET");
+    
+    // Verificar si la respuesta contiene 'messages' y es un arreglo
+    if (result && Array.isArray(result.messages)) {
+      return result.messages; // Devolver el arreglo de mensajes
+    } else {
+      console.error("Se esperaba un arreglo de mensajes, pero se recibió:", result);
+      return []; // Retornar un arreglo vacío si no tiene la estructura correcta
+    }
   } catch (error) {
     console.error("Error al obtener los mensajes:", error);
     throw error;
   }
 }
+
 
 export async function enviarMissatges(nombreAmigo, contingutMissatge) {
   try {
