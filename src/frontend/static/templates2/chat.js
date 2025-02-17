@@ -89,9 +89,15 @@ function mostrarLista(lista, idElemento) {
     return;
   }
 
+  // Obtener el nombre de usuario logueado
+  const usuario = JSON.parse(localStorage.getItem("usuari"));
+  const usuarioLogueado = usuario ? usuario.username : "";
+
   lista.forEach(item => {
     const li = document.createElement("li");
-    li.textContent = item.username || item.nombre;
+    
+    // Si el nombre del amigo es igual al usuario logueado, mostrar "(tu)"
+    li.textContent = item.username === usuarioLogueado ? `${item.username} ("Tu")` : item.username;
     li.style.cursor = "pointer";
 
     li.addEventListener("click", async () => {
@@ -105,6 +111,7 @@ function mostrarLista(lista, idElemento) {
     contenedor.appendChild(li);
   });
 }
+
 
 // --- Enviar mensaje al usuario seleccionado
 document.getElementById("enviarMensajeButton")?.addEventListener("click", async () => {
