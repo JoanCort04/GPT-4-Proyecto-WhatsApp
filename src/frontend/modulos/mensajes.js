@@ -1,13 +1,11 @@
-import { cridarAPI, transforma_Username_To_ID} from "./integracion.js";
-import fetch from "node-fetch"; // For Node.js
-
-
+import { cridarAPI, transforma_Username_To_ID } from "./integracion.js";
 
 
 class Mensaje {
   constructor(missatges = {}) {
     this.missatges = missatges;
   }
+
   rebreMissatgesAmic(amic) {
     return this.missatges[amic] || [];
   }
@@ -23,62 +21,63 @@ class Mensaje {
   }
 }
 
-async function getMissatgeUsuari(username) {
-  const endpoint = `missatgesAmics?username=${encodeURIComponent(username)}`;
+async function getMissatgeUsuari(emisor_id, receptor_id) {
+  const endpoint = `missatgesAmics?emisor_id=${emisor_id}&receptor_id=${receptor_id}`;
   try {
-    const data = await cridarAPI(endpoint, "GET");
-    return data;
+    return await cridarAPI(endpoint, "GET");
   } catch (error) {
     console.error("Error al obtener los mensajes:", error);
-    throw error; 
+    throw error;
   }
 }
 
-async function enviarMissatges(nombreAmigo, contingutMissatge) {
+export async function enviarMissatges(nombreAmigo, contingutMissatge) {
   try {
-    const emisor = "user2";
-    const emisor_id = await transforma_Username_To_ID(emisor);
-    console.log("Emisor ID:", emisor_id); 
+    const emisor = JSON.parse(localStorage.getItem("usuari"))?.username;
+    if (!emisor) {
+      console.error("No se encontró el usuario emisor.");
+      return;
+    }
 
-    const receptor_id = await transforma_Username_To_ID(nombreAmigo);
-    console.log("Receptor ID:", receptor_id); 
+    const { id: emisor_id } = await transforma_Username_To_ID(emisor);
+    const { id: receptor_id } = await transforma_Username_To_ID(nombreAmigo);
 
     const missatge = {
-      emisor_id: emisor_id.id,
-      receptor_id: receptor_id.id,
-      contenido: contingutMissatge
+      emisor_id,
+      receptor_id,
+      contenido: contingutMissatge,
     };
 
     const mensajes = await cridarAPI("missatgesAmics", "POST", missatge);
-
     console.log("Missatge enviat correctament:", mensajes);
   } catch (error) {
     console.error("Hubo un error al enviar el mensaje:", error);
+    return;
   }
 }
 
-async function rebreMissatges(nombreAmigo) {
+export async function rebreMissatges(nombreAmigo) {
   try {
-    const mensajes = await getMissatgeUsuari(nombreAmigo);
+    const emisor = JSON.parse(localStorage.getItem("usuari"))?.username;
+    if (!emisor) {
+      console.error("No se encontró el usuario emisor.");
+      return [];
+    }
 
+    const { id: emisor_id } = await transforma_Username_To_ID(emisor);
+    const { id: receptor_id } = await transforma_Username_To_ID(nombreAmigo);
+
+    const mensajes = await getMissatgeUsuari(emisor_id, receptor_id);
     const missatgesInstance = new Mensaje({ [nombreAmigo]: mensajes });
 
-    const mensajesLimitados =
-      missatgesInstance.rebreMissatgesAntics(nombreAmigo);
+    const mensajesLimitados = missatgesInstance.rebreMissatgesAntics(nombreAmigo);
 
-    mensajesLimitados.forEach((msg) => {
-      console.log(`De: ${msg.emisor_id} a: ${msg.receptor_id}`);
-      console.log(`Contenido: ${msg.contenido}`);
-      console.log(
-        `Fecha de Envío: ${new Date(msg.fecha_envio).toLocaleString()}`
-      );
-      console.log(`Estado: ${msg.estado}`);
-      console.log("--------------------------");
-    });
+    return mensajesLimitados;
   } catch (error) {
     console.error("Hubo un error al obtener los mensajes:", error);
+    return [];
   }
 }
 
-rebreMissatges("user2")
+
 

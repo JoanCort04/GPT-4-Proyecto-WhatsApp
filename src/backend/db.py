@@ -67,20 +67,19 @@ class Connexio(object):
         ResQuery = self.cursor.fetchall()
         return ResQuery
 
-    def cargaMensajesAmigo(self, username, temps):
+    def cargaMensajesAmigo(self, emisor_id, receptor_id):
         sql = """
             SELECT emisor_id, receptor_id, contenido, fecha_envio, estado
-            FROM mensajes_usuarios mu
-            JOIN usuarisclase u ON mu.id = u.id
-            WHERE u.username LIKE %s
-            AND fecha_envio < %s
-            ORDER BY fecha_envio DESC
-            LIMIT 10;
-            """
-        self.cursor.execute(sql, (username, temps))
-        ResQuery = self.cursor.fetchall()
-        return ResQuery
-
+            FROM mensajes_usuarios
+            WHERE (emisor_id = %s AND receptor_id = %s) 
+            OR (emisor_id = %s AND receptor_id = %s)
+            ORDER BY fecha_envio DESC;
+        """
+        self.cursor.execute(sql, (emisor_id, receptor_id, receptor_id, emisor_id))
+        resultados = self.cursor.fetchall()
+        print(f"Mensajes encontrados: {len(resultados)}")
+        return resultados 
+   
     def añadirAlGrupo(self, username):
         sql = (
                 "INSERT INTO grupos_de_usuarios (grupo_id, usuario_id) "
@@ -142,9 +141,14 @@ class Connexio(object):
         return ResQuery
 
     def transforma_Username_a_ID(self,username):
-        sql = """ SELECT id FROM usuarisclase WHERE username = %s """
-
-        self.cursor.execute(sql, (username))
+        sql = " SELECT id FROM usuarisclase WHERE username = %s; "
+        self.cursor.execute(sql, (username,))
+        ResQuery = self.cursor.fetchone()
+        return ResQuery
+    
+    def transforma_Id_a_Username(self,id:int):
+        sql = " SELECT username FROM usuarisclase WHERE id = %s; "
+        self.cursor.execute(sql, (id,))
         ResQuery = self.cursor.fetchone()
         return ResQuery
 

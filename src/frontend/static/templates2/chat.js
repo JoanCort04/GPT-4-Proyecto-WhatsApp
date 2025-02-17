@@ -1,61 +1,85 @@
-// chat.js
-
 import { verificarToken } from "../../modulos/auth.js";
-import { cridarAPI } from "../../modulos/integracion.js";
-import { cargar_Amigos_Grupos } from "../../modulos/grupos.js";
+import { cargarLlistaAmics } from "../../modulos/grupos.js";
+import { rebreMissatges } from "../../modulos/mensajes.js";
+import { transforma_ID_To_Username } from "../../modulos/integracion.js";
 
+// --- Variables Globales
+let usuarioSeleccionado = null;
+
+// --- Verificar usuario y cargar datos
 document.addEventListener("DOMContentLoaded", async () => {
-  // Verificar si hay token en localStorage
   const token = localStorage.getItem("jwt");
   if (!token) {
     window.location.href = "login.html";
     return;
   }
 
-  // Verificar el token con el backend
   await verificarToken();
 
-  // Obtener el usuario logueado desde localStorage
   const usuario = JSON.parse(localStorage.getItem("usuari"));
   if (!usuario || !usuario.username) {
     console.error("No se encontró el usuario en localStorage.");
     return;
   }
 
-  // Obtenir el nom de l'usuari
   document.getElementById("nombreUsuario").textContent = usuario.username;
 
-  // Cargar amigos y grupos
   try {
-    const datos = await cargar_Amigos_Grupos(usuario.username);
-
+    const datos = await cargarLlistaAmics(usuario.username);
     if (datos) {
       mostrarLista(datos.amigos, "listaAmigos");
-      mostrarLista(datos.grupos, "listaGrupos");
     }
   } catch (error) {
-    console.error("Error al cargar amigos y grupos:", error);
+    console.error("Error al cargar amigos:", error);
   }
 
-  // Agregar el manejador de eventos para el logout
-  const logoutButton = document.getElementById("logoutButton");
-  if (logoutButton) {
-    logoutButton.addEventListener("click", logout);
-  }
+  document.getElementById("logoutButton")?.addEventListener("click", logout);
 });
 
-// Función para cerrar sesión
-// Important borrar dades al fer logout
+// --- Logout
 function logout() {
-  localStorage.removeItem("jwt"); // Eliminar token JWT
-  localStorage.removeItem("usuari"); // Eliminar usuario
-  window.location.href = "login.html"; // Redirigir al login
+  localStorage.removeItem("jwt");
+  localStorage.removeItem("usuari"); 
+  window.location.href = "login.html";
 }
 
-// Función para mostrar una lista de amigos o grupos en un <ul>
+
+async function mostrarMensajesEnChat(mensajes) {
+  const contenedorMensajes = document.getElementById("contenedorMensajes");
+
+  // Clear the container before adding new messages
+  contenedorMensajes.innerHTML = "";
+
+  if (!mensajes || mensajes.length === 0) {
+    contenedorMensajes.innerHTML = "<p>No hay mensajes</p>";
+    return;
+  }
+
+  // Iterate through the messages and append them to the chat container
+  for (let mensaje of mensajes) {
+    const div = document.createElement("div");
+    div.classList.add("mensaje");
+
+    try {
+      // Fetch the sender's username using the emisor_id (ID of the sender)
+      const username = await transforma_ID_To_Username(mensaje.emisor_id);
+
+      div.innerHTML = `<strong>${username}:</strong> ${mensaje.contenido}`;
+    } catch (error) {
+      console.error("Error getting username for emisor_id:", mensaje.emisor_id, error);
+      div.innerHTML = `<strong>Unknown User:</strong> ${mensaje.contenido}`;  // Fallback
+    }
+
+    contenedorMensajes.appendChild(div);
+  }
+}
+
+
+
+// --- Mostrar lista de amigos y cargar mensajes al hacer clic
 function mostrarLista(lista, idElemento) {
   const contenedor = document.getElementById(idElemento);
-  contenedor.innerHTML = ""; // Limpiar antes de agregar
+  contenedor.innerHTML = "";
 
   if (!lista || lista.length === 0) {
     contenedor.innerHTML = "<li>No hay elementos</li>";
@@ -64,7 +88,20 @@ function mostrarLista(lista, idElemento) {
 
   lista.forEach(item => {
     const li = document.createElement("li");
-    li.textContent = item.username || item.nombre; // Ajustar según API
+    li.textContent = item.username || item.nombre;
+    li.style.cursor = "pointer";
+
+    li.addEventListener("click", async () => {
+      usuarioSeleccionado = item.username || item.nombre;
+      console.log("Usuario seleccionado:", usuarioSeleccionado);
+
+      const mensajes = await rebreMissatges(usuarioSeleccionado);
+      mostrarMensajesEnChat(mensajes);
+    });
+
     contenedor.appendChild(li);
   });
 }
+
+
+

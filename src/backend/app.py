@@ -49,17 +49,18 @@ class Amigo(BaseModel):
     
 # Bypass politica CORS per iniciar sessió
 origins = [
-    "http://127.0.0.1:5500",  
+    "http://127.0.0.1:5500",
+    "http://localhost:5500",
 ]
-
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # Funcionament bàsic 4/5
 @app.patch("/check")
@@ -73,11 +74,19 @@ def cambiaEstadoLeído_(id_missatge: str, estat: str):
 
 
 @app.get("/treuID")
-def treuID(username):
+def treuID(username: str):
     db.conecta()
-    ID_Usuari = db.transforma_Username_a_ID(username)
+    usuariId = db.transforma_Username_a_ID(username)
     db.desconecta()
-    return ID_Usuari
+    return usuariId
+
+# contrari que treu id, treu nom amb la id
+@app.get("/treuNom")
+async def treuNom(id: int):  # Change `username` to `id`
+    db.conecta()
+    usuariNom = db.transforma_Id_a_Username(id)  # Pass id instead of username
+    db.desconecta()
+    return usuariNom
 
 
 # Funcionament bàsic 1/5
@@ -216,27 +225,23 @@ def autentificarGrups(username: str):
     db.desconecta()
     return grupos
 
-# /missatgesAmics: permet enviar missatges a un amic o rebre els missatges d’aquest amic. Inicialment rebrà els 10 missatges més recents, 
-# tant els que hem enviat com els que hem rebut, cronològicament. 
-# Després el sistema ha de permetre anar rebent els missatges més antics de 10 en 10. 
-# Els missatges enviats ha d’indicar l’estat del missatge (enviat, rebut, llegit)
 
+# Lo seu tendria que ser que emisor/receptor id siguin parametres int
+# El problema es que tenim un usuari amb id 0,
+# solucions eliminar el usuario amb id 0,o canviarli la id a l'ultim
+# per ara no utlizar usuario id 0 per fer proves
 @app.get("/missatgesAmics")
-def recibirMensaje(username: str):
-    db.conecta()  
+def recibirMensaje(emisor_id:int, receptor_id:int):
+    db.conecta()
 
-    current_dateTime = datetime.now()
-    print(current_dateTime)
-    mensajes_amigo = db.cargaMensajesAmigo(username, current_dateTime)
-
-    if mensajes_amigo:
-        current_dateTime = mensajes_amigo[-1][
-            "fecha_envio"
-        ]  
-
-    db.desconecta()  # Disconnect from the database
-
-    return mensajes_amigo
+    # Aseguramos que la validación no rechace el 0
+    if emisor_id is None or receptor_id is None:
+        return {"error": "Emisor o receptor no válidos"}
+    
+    chatAmic = db.cargaMensajesAmigo(emisor_id, receptor_id)
+    db.desconecta()
+    
+    return chatAmic
 
 # Funcionament bàsic 3/5
 @app.post("/missatgesAmics")

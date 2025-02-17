@@ -18,7 +18,7 @@ export function inicializarLogin() {
   });
 }
 
-// Validar formato de nombre de usuario
+// Validar format de nom usuari
 function validateUsername(username) {
   const nomRegex = /^[a-zA-Z][a-zA-Z0-9_]{3,15}$/;
   return nomRegex.test(username);
@@ -27,18 +27,20 @@ function validateUsername(username) {
 // Función para realizar login
 async function rebreUsuari(username, password) {
   const info = {
-    "username": username,
-    "passwd": password,
+    username: username,
+    passwd: password,
   };
 
   const usuaris = await cridarAPI("login", "POST", info);
   return usuaris;
 }
 
-// Función per obtenir el token, despres del login
+// Funcio per obtenir el token, despres del login
 export async function validar_login(username, password) {
   if (!validateUsername(username)) {
-    console.log("Nom d'usuari invàlid. Ha de començar amb una lletra i tenir entre 4 i 16 caràcters.");
+    console.log(
+      "Nom d'usuari invàlid. Ha de començar amb una lletra i tenir entre 4 i 16 caràcters."
+    );
     return;
   }
 
@@ -51,12 +53,12 @@ export async function validar_login(username, password) {
 
   console.log("Usuario logueado:", response);
 
-  // Guardar el token JWT en localStorage
+  // Guarda el token JWT en localStorage
   localStorage.setItem("jwt", response.access_token);
 
-  // Guardar datos del usuario (incluyendo username)
+  // Guarda nom de l'usuari
   const usuario = {
-    username: username, // Usa el que ingresó el usuario en el login
+    username: username, // username login
     token: response.access_token,
   };
 
@@ -66,20 +68,20 @@ export async function validar_login(username, password) {
   window.location.href = "chat.html";
 }
 
-
 export async function verificarToken() {
   const token = localStorage.getItem("jwt");
-
   if (!token) {
     // Si no hay token, redirigir al login
     window.location.href = "login.html";
     return;
   }
-
   try {
-    // Llamar al backend para verificar el token, pasando el token como header
-    const response = await cridarAPI("verify-token", "POST", { token: token }, token);
-
+    const response = await cridarAPI(
+      "verify-token",
+      "POST",
+      { token: token },
+      token
+    );
     if (response.message !== "Token is valid") {
       // Si el token no es válido, redirigir al login
       window.location.href = "login.html";
@@ -88,8 +90,7 @@ export async function verificarToken() {
       console.log("Token válido, acceso permitido.");
     }
   } catch (error) {
-    // Manejar el error si ocurre
     console.error("Error al verificar el token:", error);
-    window.location.href = "login.html"; // Redirigir a login si hay un error
+    window.location.href = "login.html";
   }
 }
