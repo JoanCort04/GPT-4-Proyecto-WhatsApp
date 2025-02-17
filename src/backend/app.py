@@ -50,7 +50,7 @@ class Amigo(BaseModel):
 # Bypass politica CORS per iniciar sessió
 origins = [
     "http://127.0.0.1:5500",
-    "http://localhost:5500",
+    "http://localhost:8000",
 ]
 
 app.add_middleware(
@@ -220,10 +220,25 @@ def verify_token_endpoint(token_data: dict = Depends(verify_token)):
 # Funcionament bàsic 2/5
 @app.get("/grups")
 def autentificarGrups(username: str):
-    db.conecta()
-    grupos = db.sacaGruposDelUser(username) 
-    db.desconecta()
-    return grupos
+    db.conecta()  # Conecta a la base de datos
+    
+    # Obtener los grupos del usuario
+    grupos = db.sacaGruposDelUser(username)
+    if not grupos:
+        db.desconecta()
+        raise HTTPException(status_code=404, detail="El usuario no pertenece a ningún grupo")
+    
+    # Obtener el primer grupo y sus integrantes
+    grupo_id = grupos[0]["grupo_id"]
+    integrantes = db.sacaIntegrantesGrupo(grupo_id)
+
+    db.desconecta()  # Desconecta de la base de datos
+
+    # Retornar grupos e integrantes
+    return {
+        "grupos": grupos,
+        "integrantes": integrantes
+    }
 
 
 # Lo seu tendria que ser que emisor/receptor id siguin parametres int
