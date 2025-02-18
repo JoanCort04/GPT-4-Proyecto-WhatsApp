@@ -1,6 +1,6 @@
 import { verificarToken } from "../../modulos/auth.js";
 import { cargarLlistaAmics } from "../../modulos/grupos.js";
-import { rebreMissatges,enviarMissatges } from "../../modulos/mensajes.js";
+import { rebreMissatges, enviarMissatges } from "../../modulos/mensajes.js";
 import { transforma_ID_To_Username } from "../../modulos/integracion.js";
 
 // --- Variables Globales
@@ -25,12 +25,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("nombreUsuario").textContent = usuario.username;
 
   try {
-    const datos = await cargarLlistaAmics(usuario.username);
-    if (datos) {
-      mostrarLista(datos.amigos, "listaAmigos");
+    const datosAmigos = await cargarLlistaAmics(usuario.username);
+    if (datosAmigos) {
+      mostrarLista(datosAmigos.amigos, "listaAmigos");
     }
+
+    await fetchGrupos(usuario.username);
   } catch (error) {
-    console.error("Error al cargar amigos:", error);
+    console.error("Error al cargar datos iniciales:", error);
   }
 
   document.getElementById("logoutButton")?.addEventListener("click", logout);
@@ -39,40 +41,31 @@ document.addEventListener("DOMContentLoaded", async () => {
 // --- Logout
 function logout() {
   localStorage.removeItem("jwt");
-  localStorage.removeItem("usuari"); 
+  localStorage.removeItem("usuari");
   window.location.href = "login.html";
 }
 
-
+// --- Mostrar mensajes en el chat
 async function mostrarMensajesEnChat(mensajes) {
   const contenedorMensajes = document.getElementById("contenedorMensajes");
-
-  // Clear the container before adding new messages
-  contenedorMensajes.innerHTML = "";
+  contenedorMensajes.innerHTML = ""; // Limpiar el contenedor
 
   if (!mensajes || mensajes.length === 0) {
     contenedorMensajes.innerHTML = "<p>No hay mensajes</p>";
     return;
   }
 
-  // Iterate through the messages and append them to the chat container
-  for (let mensaje of mensajes) {
+  for (const mensaje of mensajes) {
     const div = document.createElement("div");
     div.classList.add("mensaje");
 
     try {
-      // Fetch the sender's username using the emisor_id (ID of the sender)
       const username = await transforma_ID_To_Username(mensaje.emisor_id);
-
-      // Obtener la fecha del mensaje (asegurándote de que está en el formato adecuado)
-      const fecha = new Date(mensaje.fecha_envio);  // Asegúrate de que 'fecha_envio' existe
-      const fechaFormateada = fecha.toLocaleString();  // Formatear la fecha en un formato legible
-
-      // Mostrar mensaje con la fecha de envío
-      div.innerHTML = `<strong>${username}:</strong> ${mensaje.contenido} <span class="fecha">(${fechaFormateada})</span>`;
+      const fecha = new Date(mensaje.fecha_envio).toLocaleString();
+      div.innerHTML = `<strong>${username}:</strong> ${mensaje.contenido} <span class="fecha">(${fecha})</span>`;
     } catch (error) {
-      console.error("Error getting username for emisor_id:", mensaje.emisor_id, error);
-      div.innerHTML = `<strong>Unknown User:</strong> ${mensaje.contenido}`;  // Fallback
+      console.error("Error al obtener el username:", mensaje.emisor_id, error);
+      div.innerHTML = `<strong>Usuario desconocido:</strong> ${mensaje.contenido}`;
     }
 
     contenedorMensajes.appendChild(div);
@@ -89,19 +82,19 @@ function mostrarLista(lista, idElemento) {
     return;
   }
 
-  // Obtener el nombre de usuario logueado
   const usuario = JSON.parse(localStorage.getItem("usuari"));
-  const usuarioLogueado = usuario ? usuario.username : "";
+  const usuarioLogueado = usuario?.username;
 
-  lista.forEach(item => {
+  lista.forEach((item) => {
     const li = document.createElement("li");
-    
-    // Si el nombre del amigo es igual al usuario logueado, mostrar "(tu)"
-    li.textContent = item.username === usuarioLogueado ? `${item.username} ("Tu")` : item.username;
+    li.textContent =
+      item.username === usuarioLogueado
+        ? `${item.username} (Tú)`
+        : item.username;
     li.style.cursor = "pointer";
 
     li.addEventListener("click", async () => {
-      usuarioSeleccionado = item.username || item.nombre;
+      usuarioSeleccionado = item.username;
       console.log("Usuario seleccionado:", usuarioSeleccionado);
 
       const mensajes = await rebreMissatges(usuarioSeleccionado);
@@ -112,25 +105,93 @@ function mostrarLista(lista, idElemento) {
   });
 }
 
-
-// --- Enviar mensaje al usuario seleccionado
-document.getElementById("enviarMensajeButton")?.addEventListener("click", async () => {
-  if (!usuarioSeleccionado) {
-    console.error("No se ha seleccionado ningún usuario.");
-    return;
-  }
-
-  const contenidoMensaje = document.getElementById("contenidoMensaje").value;  // Suponiendo que tienes un input para el contenido del mensaje
-  if (!contenidoMensaje) {
-    console.error("El mensaje está vacío.");
-    return;
-  }
-
+// --- Cargar y mostrar grupos
+async function fetchGrupos(username) {
   try {
-    await enviarMissatges(usuarioSeleccionado, contenidoMensaje);
-    console.log("Mensaje enviado a:", usuarioSeleccionado);
-    document.getElementById("contenidoMensaje").value = ""; // Limpiar el campo de mensaje
+    const response = await fetch(
+      `http://localhost:8000/grups?username=${username}`
+    );
+
+    if (!response.ok) throw new Error("Error al obtener los grupos");
+
+    const data = await response.json();
+    renderGrupos(data.grupos, data.integrantes);
   } catch (error) {
-    console.error("Error al enviar el mensaje:", error);
+    console.error("Error al cargar grupos:", error);
   }
-});
+}
+
+function renderGrupos(grupos, integrantesIniciales) {
+  const listaGrupos = document.getElementById("listaGrupos");
+  listaGrupos.innerHTML = "";
+
+  grupos.forEach((grupo) => {
+    const li = document.createElement("li");
+    li.textContent = grupo.nombre; // Asumiendo que `nombre` es una propiedad válida
+    li.dataset.grupoId = grupo.grupo_id;
+    li.style.cursor = "pointer";
+
+    li.addEventListener("click", () => fetchIntegrantes(grupo.grupo_id));
+    listaGrupos.appendChild(li);
+  });
+
+  // Renderizar integrantes del primer grupo por defecto
+  renderIntegrantes(integrantesIniciales);
+}
+
+
+
+async function fetchIntegrantes(grupoId) {
+  try {
+    const response = await fetch(
+      `http://localhost:8000/grups?grupo_id=${grupoId}`
+    );
+
+    if (!response.ok) throw new Error("Error al obtener los integrantes");
+
+    const data = await response.json();
+    renderIntegrantes(data.integrantes);
+  } catch (error) {
+    console.error("Error al cargar integrantes:", error);
+  }
+}
+
+function renderIntegrantes(integrantes) {
+  const listaIntegrantes = document.getElementById("listaIntegrantes");
+  listaIntegrantes.innerHTML = "";
+
+  if (!integrantes || integrantes.length === 0) {
+    listaIntegrantes.innerHTML = "<li>No hay integrantes</li>";
+    return;
+  }
+
+  integrantes.forEach((integrante) => {
+    const li = document.createElement("li");
+    li.textContent = integrante.nombre; // Asumiendo que `nombre` es una propiedad válida
+    listaIntegrantes.appendChild(li);
+  });
+}
+
+// --- Enviar mensaje
+document
+  .getElementById("enviarMensajeButton")
+  ?.addEventListener("click", async () => {
+    if (!usuarioSeleccionado) {
+      console.error("No se ha seleccionado ningún usuario.");
+      return;
+    }
+
+    const contenidoMensaje = document.getElementById("contenidoMensaje").value;
+    if (!contenidoMensaje) {
+      console.error("El mensaje está vacío.");
+      return;
+    }
+
+    try {
+      await enviarMissatges(usuarioSeleccionado, contenidoMensaje);
+      console.log("Mensaje enviado a:", usuarioSeleccionado);
+      document.getElementById("contenidoMensaje").value = ""; // Limpiar el campo
+    } catch (error) {
+      console.error("Error al enviar el mensaje:", error);
+    }
+  });

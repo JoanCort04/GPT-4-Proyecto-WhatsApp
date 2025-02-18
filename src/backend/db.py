@@ -37,23 +37,46 @@ class Connexio(object):
         ResQuery = self.cursor.fetchall()
         return ResQuery
 
+    def isUsuarioEnGrupo(self, username: str, grupo_id: int):
+        # Obtener el id del usuario
+        sql = "SELECT id FROM usuarisclase WHERE username = %s"
+        self.cursor.execute(sql, (username,))
+        usuario = self.cursor.fetchone()
+        
+        if not usuario:
+            return False  # Si no se encuentra el usuario, devuelve False
+        
+        usuario_id = usuario['id']
+        
+        # Verificar si el usuario está en el grupo
+        sql = """
+            SELECT 1
+            FROM grupos_de_usuarios
+            WHERE usuario_id = %s AND grupo_id = %s
+        """
+        self.cursor.execute(sql, (usuario_id, grupo_id))
+        result = self.cursor.fetchone()
+        
+        return result is not None  # Si la consulta devuelve algo, significa que el usuario está en el grupo
+
+
     def sacaIntegrantesGrupo(self, grupo_id):
         sql = """
-             SELECT 
-                gdu.grupo_id, g.nom, g.descripcion, g.data_creacio, g.creador_id
+            SELECT 
+                u.id, u.username
             FROM 
                 grupos_de_usuarios gdu
             JOIN 
-                grupos g ON gdu.grupo_id = g.id
-            JOIN 
                 usuarisclase u ON gdu.usuario_id = u.id
             WHERE 
-                u.username = %s;
+                gdu.grupo_id = %s;
         """
 
         self.cursor.execute(sql, (grupo_id,))
         ResQuery = self.cursor.fetchall()
         return ResQuery
+    
+
 
     # /grupos
     def sacaGruposDelUser(self, username):

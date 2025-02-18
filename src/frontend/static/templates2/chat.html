@@ -1,26 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Chat</title>
-        <script type="module" src="../templates2/chat.js"></script>
-    </head>
-    <body>
-        <h2>Usuari, <span id="nombreUsuario"></span></h2>
-        <button id="logoutButton">Logout</button>
 
-        <h2>Lista de Amigos</h2>
-        <ul id="listaAmigos"></ul>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    <script type="module" src="../templates2/chat.js"></script>
+</head>
 
-        <h2>Lista de grupos</h2>
-        <ul id="listaGrupos"></ul>
+<body>
+    <h2>Usuari, <span id="nombreUsuario"></span></h2>
+    <button id="logoutButton">Logout</button>
 
-        <h2>Missatges</h2>
-        <div id="contenedorMensajes"></div>
+    <h2>Lista de Amigos</h2>
+    <ul id="listaAmigos"></ul>
 
-        <!-- Sección para escribir y enviar mensajes -->
-        <textarea id="contenidoMensaje" placeholder="Escribe tu mensaje aquí..."></textarea><br>
-        <button id="enviarMensajeButton">Enviar Mensaje</button>
-    </body>
+    <h2>Lista de grupos</h2>
+    <ul id="listaGrupos"></ul>
+
+    <h2>Integrantes del Grupo</h2>
+    <ul id="listaIntegrantes"></ul>
+
+    <h2>Missatges</h2>
+    <div id="contenedorMensajes"></div>
+
+    <!-- Sección para escribir y enviar mensajes -->
+    <textarea id="contenidoMensaje" placeholder="Escribe tu mensaje aquí..."></textarea><br>
+    <button id="enviarMensajeButton">Enviar Mensaje</button>
+</body>
+
 </html>
