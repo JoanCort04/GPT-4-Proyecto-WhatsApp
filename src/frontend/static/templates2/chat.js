@@ -5,6 +5,7 @@ import { transforma_ID_To_Username } from "../../modulos/integracion.js";
 
 // --- Variables Globales
 let usuarioSeleccionado = null;
+let gruposData = []; // Almacena todos los datos de grupos
 
 // --- Verificar usuario y cargar datos
 document.addEventListener("DOMContentLoaded", async () => {
@@ -25,12 +26,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("nombreUsuario").textContent = usuario.username;
 
   try {
+    // Cargar amigos y grupos al iniciar
     const datosAmigos = await cargarLlistaAmics(usuario.username);
     if (datosAmigos) {
       mostrarLista(datosAmigos.amigos, "listaAmigos");
     }
 
-    await fetchGrupos(usuario.username);
+    await fetchGrupos(usuario.username); // Carga grupos del usuario logueado
   } catch (error) {
     console.error("Error al cargar datos iniciales:", error);
   }
@@ -97,6 +99,7 @@ function mostrarLista(lista, idElemento) {
       usuarioSeleccionado = item.username;
       console.log("Usuario seleccionado:", usuarioSeleccionado);
 
+      // Cargar los mensajes del usuario seleccionado
       const mensajes = await rebreMissatges(usuarioSeleccionado);
       mostrarMensajesEnChat(mensajes);
     });
@@ -115,60 +118,70 @@ async function fetchGrupos(username) {
     if (!response.ok) throw new Error("Error al obtener los grupos");
 
     const data = await response.json();
-    renderGrupos(data.grupos, data.integrantes);
+    gruposData = data; // Guardar todos los datos
+    renderGrupos(data.grupos);
+
+    // Cargar integrantes del primer grupo por defecto
+    if (data.grupos.length > 0) {
+      fetchIntegrantes(data.grupos[0].grupo_id);
+    }
   } catch (error) {
     console.error("Error al cargar grupos:", error);
   }
 }
 
-function renderGrupos(grupos, integrantesIniciales) {
+// --- Renderizar la lista de grupos
+function renderGrupos(grupos) {
   const listaGrupos = document.getElementById("listaGrupos");
-  listaGrupos.innerHTML = "";
+  listaGrupos.innerHTML = ""; // Limpiar la lista antes de agregar nuevos grupos
+
+  if (!grupos || grupos.length === 0) {
+    listaGrupos.innerHTML = "<li>No tienes grupos</li>";
+    return;
+  }
 
   grupos.forEach((grupo) => {
     const li = document.createElement("li");
-    li.textContent = grupo.nombre; // Asumiendo que `nombre` es una propiedad válida
+    li.textContent = grupo.nom; // Suponiendo que `nom` es el nombre del grupo
     li.dataset.grupoId = grupo.grupo_id;
     li.style.cursor = "pointer";
 
+    // Al hacer clic en un grupo, obtenemos los integrantes
     li.addEventListener("click", () => fetchIntegrantes(grupo.grupo_id));
     listaGrupos.appendChild(li);
   });
-
-  // Renderizar integrantes del primer grupo por defecto
-  renderIntegrantes(integrantesIniciales);
 }
 
-
-
+// --- Obtener y mostrar integrantes de un grupo
 async function fetchIntegrantes(grupoId) {
   try {
     const response = await fetch(
-      `http://localhost:8000/grups?grupo_id=${grupoId}`
+      `http://localhost:8000/grupos/${grupoId}/integrantes`
     );
 
-    if (!response.ok) throw new Error("Error al obtener los integrantes");
+    if (!response.ok) throw new Error("Error al obtener integrantes");
 
     const data = await response.json();
     renderIntegrantes(data.integrantes);
   } catch (error) {
-    console.error("Error al cargar integrantes:", error);
+    console.error("Error cargando integrantes:", error);
   }
 }
 
+// --- Renderizar la lista de integrantes
 function renderIntegrantes(integrantes) {
-  const listaIntegrantes = document.getElementById("listaIntegrantes");
-  listaIntegrantes.innerHTML = "";
+  const lista = document.getElementById("listaIntegrantes");
+  lista.innerHTML = "";
 
   if (!integrantes || integrantes.length === 0) {
-    listaIntegrantes.innerHTML = "<li>No hay integrantes</li>";
+    lista.innerHTML = "<li>No hay integrantes</li>";
     return;
   }
 
   integrantes.forEach((integrante) => {
     const li = document.createElement("li");
-    li.textContent = integrante.nombre; // Asumiendo que `nombre` es una propiedad válida
-    listaIntegrantes.appendChild(li);
+    li.textContent = integrante.username;
+    lista.appendChild(li);
   });
 }
 
