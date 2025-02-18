@@ -3,6 +3,7 @@ import { cargarLlistaAmics } from "../../modulos/grupos.js";
 import { rebreMissatges,enviarMissatges } from "../../modulos/mensajes.js";
 import { transforma_ID_To_Username } from "../../modulos/integracion.js";
 
+
 // --- Variables Globales
 let usuarioSeleccionado = null;
 
@@ -113,18 +114,74 @@ function mostrarLista(lista, idElemento) {
 }
 
 
-// --- Enviar mensaje al usuario seleccionado
-document.getElementById("enviarMensajeButton")?.addEventListener("click", async () => {
-  if (!usuarioSeleccionado) {
-    console.error("No se ha seleccionado ningún usuario.");
-    return;
-  }
 
-  const contenidoMensaje = document.getElementById("contenidoMensaje").value;  // Suponiendo que tienes un input para el contenido del mensaje
-  if (!contenidoMensaje) {
-    console.error("El mensaje está vacío.");
-    return;
-  }
+document.addEventListener("DOMContentLoaded", () => {
+    const listaGrupos = document.getElementById("listaGrupos");
+    const listaIntegrantes = document.getElementById("listaIntegrantes");
+    const nombreUsuario = document.getElementById("nombreUsuario");
+
+    // Simula obtener el nombre del usuario (puede ser por JWT o almacenamiento local)
+    const usuario = "user2"; // Cambiar por el método real
+    nombreUsuario.textContent = usuario;
+
+    // Llamar a la API para obtener los grupos del usuario
+    fetch(`/grups?username=${usuario}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Error al obtener los grupos");
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Mostrar los grupos en la lista
+            data.grupos.forEach(grupo => {
+                const li = document.createElement("li");
+                li.textContent = grupo.nombre; // Asume que el grupo tiene un atributo 'nombre'
+                li.dataset.grupoId = grupo.grupo_id;
+
+                li.addEventListener("click", () => {
+                    mostrarIntegrantes(grupo.grupo_id);
+                });
+
+                listaGrupos.appendChild(li);
+            });
+        })
+        .catch(error => {
+            console.error("Error:", error);
+        });
+
+    // Función para mostrar integrantes de un grupo
+    function mostrarIntegrantes(grupoId) {
+        listaIntegrantes.innerHTML = ""; // Limpiar la lista
+
+        fetch(`http://127.0.0.1:8000/grups?username=${usuario}`)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Error al obtener los integrantes");
+            }
+            return response.json();
+          })
+          .then((data) => {
+            // Mostrar los integrantes en la lista
+            data.integrantes.forEach((integrante) => {
+              const li = document.createElement("li");
+              li.textContent = integrante.nombre; // Asume que los integrantes tienen un atributo 'nombre'
+              listaIntegrantes.appendChild(li);
+            });
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+    }
+
+    // Manejar logout
+    const logoutButton = document.getElementById("logoutButton");
+    logoutButton.addEventListener("click", () => {
+        // Simula el logout (puede ser borrar tokens, redirigir, etc.)
+        console.log("Logout");
+        window.location.href = "/login"; // Redirige a la página de login
+    });
+});
 
   try {
     await enviarMissatges(usuarioSeleccionado, contenidoMensaje);
@@ -132,5 +189,6 @@ document.getElementById("enviarMensajeButton")?.addEventListener("click", async 
     document.getElementById("contenidoMensaje").value = ""; // Limpiar el campo de mensaje
   } catch (error) {
     console.error("Error al enviar el mensaje:", error);
-  }
-});
+  };
+
+

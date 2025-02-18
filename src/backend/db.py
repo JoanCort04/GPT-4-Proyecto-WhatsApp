@@ -74,7 +74,8 @@ JOIN
                 gdu.grupo_id = %s;
         """
 
-        self.cursor.execute(sql, (grupo_id))
+        # Nota la coma después de grupo_id para convertirlo en una tupla
+        self.cursor.execute(sql, (grupo_id,))
         ResQuery = self.cursor.fetchall()
         return ResQuery
 
@@ -175,7 +176,7 @@ JOIN
 
     def transforma_Username_a_ID(self,username):
         sql = " SELECT id FROM usuarisclase WHERE username = %s; "
-        self.cursor.execute(sql, (username,))
+        self.cursor.execute(sql, (username))
         ResQuery = self.cursor.fetchone()
         return ResQuery
 
@@ -187,8 +188,8 @@ JOIN
 
     def modificaEstatMissatgeUsuarios(self, estat, missatge_id):
         sql = """ UPDATE mensajes_usuarios 
-                SET estat = "'%s'"
-                WHERE id LIKE '%s' """
+                SET estat = %s
+                WHERE id = %s """
         self.cursor.execute(sql, (estat, missatge_id))
         ResQuery = self.cursor.fetchone()
         return ResQuery

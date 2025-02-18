@@ -13,6 +13,16 @@ db = db.Connexio()
 app = FastAPI()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Permitir todos los orígenes para pruebas
+    allow_credentials=True,
+    allow_methods=["*"],  # Permitir todos los métodos
+    allow_headers=["*"],  # Permitir todos los encabezados
+)
+
+
 SECRET_KEY = "mysecretkey"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
@@ -46,20 +56,6 @@ class Mensaje(BaseModel):
 class Amigo(BaseModel):
     username: str
     id: int 
-
-# Bypass politica CORS per iniciar sessió
-origins = [
-    "http://127.0.0.1:5500",
-    "http://localhost:5500",
-]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 
 # Funcionament bàsic 4/5
