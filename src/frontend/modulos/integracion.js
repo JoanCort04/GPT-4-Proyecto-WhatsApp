@@ -1,11 +1,8 @@
 // integracion.js
 // Cridar api, funcio que utilizam per cridar els endpoints
-export async function cridarAPI(
-  endpoint,
-  method = "GET",
-  body = null,
-  token = null
-) {
+const BASE_URL = "http://127.0.0.1:8000/";
+
+export async function cridarAPI(endpoint, method = "GET", body = null, token = null) {
   const headers = {
     "Content-Type": "application/json",
   };
@@ -19,12 +16,12 @@ export async function cridarAPI(
     headers,
   };
 
-  if (body) {
+  if (body && Object.keys(body).length > 0) {
     options.body = JSON.stringify(body);
   }
 
   try {
-    const response = await fetch(`http://127.0.0.1:8000/${endpoint}`, options);
+    const response = await fetch(`${BASE_URL}${endpoint}`, options);
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -33,7 +30,12 @@ export async function cridarAPI(
       );
     }
 
-    return await response.json();
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+      return await response.json();
+    } else {
+      throw new Error("Expected JSON response");
+    }
   } catch (error) {
     console.error("Error en la llamada a la API:", error);
     throw error;

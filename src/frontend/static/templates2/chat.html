@@ -1,11 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Chat</title>
-        <script type="module" src="../templates2/chat.js"></script>
-        <style>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat</title>
+    <script
+      src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+    <script type="module" src="../templates2/chat.js"></script>
+
+  </head>
+  <body><style>
+
       /* Estilo general de la página */
       body {
         font-family: Arial, sans-serif;
@@ -155,32 +160,30 @@
         font-weight: bold;
       }
     </style>
-    </head>
-    <body>
-        <div class="containerGeneral">
-            <!-- Sidebar (Lista de usuarios y grupos) -->
-            <div id="sidebar">
-                <h2>Usuari, <span id="nombreUsuario"></span></h2>
-                <button id="logoutButton">Logout</button>
+    <div class="containerGeneral">
+      <!-- Sidebar (Lista de usuarios y grupos) -->
+      <div id="sidebar">
+        <h2>Usuari, <span id="nombreUsuario"></span></h2>
+        <button id="logoutButton">Logout</button>
 
-                <h2>Lista de Amigos</h2>
-                <ul id="listaAmigos">
-                </ul>
-                <h2>Lista de Grupos</h2>
-                <ul id="listaGrupos">
-                </ul>
-            </div>
+        <h2>Lista de Amigos</h2>
+        <ul id="listaAmigos">
+        </ul>
+        <h2>Lista de Grupos</h2>
+        <ul id="listaGrupos">
+        </ul>
+      </div>
 
-            <!-- Área de chat (Mensajes, textarea y botón) -->
-            <div id="divChat">
-                <h2>Missatges</h2>
-                <div id="contenedorMensajes"></div>
+      <!-- Área de chat (Mensajes, textarea y botón) -->
+      <div id="divChat">
+        <h2>Missatges</h2>
+        <div id="contenedorMensajes"></div>
 
-                <!-- Sección para escribir y enviar mensajes -->
-                <textarea id="contenidoMensaje"
-                    placeholder="Escribe tu mensaje aquí..."></textarea><br />
-                <button id="enviarMensajeButton">Enviar Mensaje</button>
-            </div>
-        </div>
-    </body>
+        <!-- Sección para escribir y enviar mensajes -->
+        <textarea id="contenidoMensaje"
+          placeholder="Escribe tu mensaje aquí..."></textarea><br />
+        <button id="enviarMensajeButton">Enviar Mensaje</button>
+      </div>
+    </div>
+  </body>
 </html>

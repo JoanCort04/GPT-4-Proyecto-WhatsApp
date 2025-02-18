@@ -1,10 +1,11 @@
 import { verificarToken } from "../../modulos/auth.js";
 import { cargarLlistaAmics } from "../../modulos/grupos.js";
-import { rebreMissatges,enviarMissatges } from "../../modulos/mensajes.js";
+import { rebreMissatges, enviarMissatges } from "../../modulos/mensajes.js";
 import { transforma_ID_To_Username } from "../../modulos/integracion.js";
 
 // --- Variables Globales
 let usuarioSeleccionado = null;
+let currentUser = ""; // Variable global para el nombre de usuario
 
 // --- Verificar usuario y cargar datos
 document.addEventListener("DOMContentLoaded", async () => {
@@ -14,17 +15,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
+  // Verificar token y cargar el nombre del usuario
   await verificarToken();
+  await obtenerNombreDeUsuario();  // Obtener el nombre de usuario
 
-  const usuario = JSON.parse(localStorage.getItem("usuari"));
-  if (!usuario || !usuario.username) {
-    console.error("No se encontró el usuario en localStorage.");
+  if (!currentUser) {
+    console.error("No se pudo obtener el nombre de usuario.");
     return;
   }
 
-  document.getElementById("nombreUsuario").textContent = usuario.username;
+  // Mostrar el nombre de usuario en la interfaz
+  document.getElementById("nombreUsuario").textContent = currentUser;
 
   try {
+    const usuario = JSON.parse(localStorage.getItem("usuari"));
     const datos = await cargarLlistaAmics(usuario.username);
     if (datos) {
       mostrarLista(datos.amigos, "listaAmigos");
@@ -43,11 +47,38 @@ function logout() {
   window.location.href = "login.html";
 }
 
+// --- Función para obtener el nombre de usuario a partir del token
+export async function obtenerNombreDeUsuario() {
+  const token = localStorage.getItem("jwt");
+  if (!token) {
+    console.log("No hay token, por favor inicie sesión.");
+    return;
+  }
 
+  try {
+    // Decodificamos el token para obtener el ID del usuario
+    const decodedToken = jwt_decode(token);
+    const userId = decodedToken.id;
+
+    // Usamos cridarAPI para obtener el nombre del usuario
+    const response = await transforma_ID_To_Username(userId, token);
+
+    if (response) {
+      currentUser = response;  // Guardamos el nombre de usuario en currentUser
+      console.log("Nombre de usuario:", currentUser);
+    } else {
+      console.log("No se pudo obtener el nombre de usuario.");
+    }
+  } catch (error) {
+    console.error("Error al obtener el nombre de usuario:", error);
+  }
+}
+
+// --- Mostrar mensajes en el chat
 async function mostrarMensajesEnChat(mensajes) {
   const contenedorMensajes = document.getElementById("contenedorMensajes");
 
-  // Clear the container before adding new messages
+  // Limpiar el contenedor antes de agregar nuevos mensajes
   contenedorMensajes.innerHTML = "";
 
   if (!mensajes || mensajes.length === 0) {
@@ -55,24 +86,23 @@ async function mostrarMensajesEnChat(mensajes) {
     return;
   }
 
-  // Iterate through the messages and append them to the chat container
+  // Iterar sobre los mensajes y agregarlos al contenedor
   for (let mensaje of mensajes) {
     const div = document.createElement("div");
     div.classList.add("mensaje");
 
     try {
-      // Fetch the sender's username using the emisor_id (ID of the sender)
+      // Obtener el nombre de usuario del emisor a partir del ID
       const username = await transforma_ID_To_Username(mensaje.emisor_id);
 
-      // Obtener la fecha del mensaje (asegurándote de que está en el formato adecuado)
-      const fecha = new Date(mensaje.fecha_envio);  // Asegúrate de que 'fecha_envio' existe
-      const fechaFormateada = fecha.toLocaleString();  // Formatear la fecha en un formato legible
+      // Formatear la fecha del mensaje
+      const fecha = new Date(mensaje.fecha_envio);
+      const fechaFormateada = fecha.toLocaleString();
 
-      // Mostrar mensaje con la fecha de envío
       div.innerHTML = `<strong>${username}:</strong> ${mensaje.contenido} <span class="fecha">(${fechaFormateada})</span>`;
     } catch (error) {
-      console.error("Error getting username for emisor_id:", mensaje.emisor_id, error);
-      div.innerHTML = `<strong>Unknown User:</strong> ${mensaje.contenido}`;  // Fallback
+      console.error("Error al obtener el nombre de usuario para emisor_id:", mensaje.emisor_id, error);
+      div.innerHTML = `<strong>Usuario desconocido:</strong> ${mensaje.contenido}`;  // Fallback
     }
 
     contenedorMensajes.appendChild(div);
@@ -85,7 +115,7 @@ function mostrarLista(lista, idElemento) {
   contenedor.innerHTML = "";
 
   if (!lista || lista.length === 0) {
-    contenedor.innerHTML = "<li>No hay elementos</li>";
+    contenedor.innerHTML = "<li>No hay amigos</li>";
     return;
   }
 
@@ -95,8 +125,8 @@ function mostrarLista(lista, idElemento) {
 
   lista.forEach(item => {
     const li = document.createElement("li");
-    
-    // Si el nombre del amigo es igual al usuario logueado, mostrar "(tu)"
+
+    // Si el amigo es el usuario logueado, mostrar "(tu)"
     li.textContent = item.username === usuarioLogueado ? `${item.username} ("Tu")` : item.username;
     li.style.cursor = "pointer";
 
@@ -112,7 +142,6 @@ function mostrarLista(lista, idElemento) {
   });
 }
 
-
 // --- Enviar mensaje al usuario seleccionado
 document.getElementById("enviarMensajeButton")?.addEventListener("click", async () => {
   if (!usuarioSeleccionado) {
@@ -120,7 +149,7 @@ document.getElementById("enviarMensajeButton")?.addEventListener("click", async 
     return;
   }
 
-  const contenidoMensaje = document.getElementById("contenidoMensaje").value;  // Suponiendo que tienes un input para el contenido del mensaje
+  const contenidoMensaje = document.getElementById("contenidoMensaje").value;
   if (!contenidoMensaje) {
     console.error("El mensaje está vacío.");
     return;
@@ -129,7 +158,7 @@ document.getElementById("enviarMensajeButton")?.addEventListener("click", async 
   try {
     await enviarMissatges(usuarioSeleccionado, contenidoMensaje);
     console.log("Mensaje enviado a:", usuarioSeleccionado);
-    document.getElementById("contenidoMensaje").value = ""; // Limpiar el campo de mensaje
+    document.getElementById("contenidoMensaje").value = "";  // Limpiar el campo de mensaje
   } catch (error) {
     console.error("Error al enviar el mensaje:", error);
   }

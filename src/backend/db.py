@@ -80,18 +80,43 @@ class Connexio(object):
         ResQuery = self.cursor.fetchall()
         return ResQuery
 
-    def cargaMensajesAmigo(self, emisor_id, receptor_id):
-        sql = """
-            SELECT emisor_id, receptor_id, contenido, fecha_envio, estat
-            FROM mensajes_usuarios
-            WHERE (emisor_id = %s AND receptor_id = %s) 
-            OR (emisor_id = %s AND receptor_id = %s)
-            ORDER BY fecha_envio ASC;
-        """
-        self.cursor.execute(sql, (emisor_id, receptor_id, receptor_id, emisor_id))
+    def cargaMensajesAmigo(self, emisor_id, receptor_id, fecha_envio=None):
+        if fecha_envio:
+            sql = """
+                SELECT 
+                    m.emisor_id, ue.username AS emisor_nombre,
+                    m.receptor_id, ur.username AS receptor_nombre,
+                    m.contenido, m.fecha_envio, m.estat
+                FROM mensajes_usuarios m
+                INNER JOIN usuarisclase ue ON m.emisor_id = ue.id
+                INNER JOIN usuarisclase ur ON m.receptor_id = ur.id
+                WHERE ((m.emisor_id = %s AND m.receptor_id = %s) 
+                OR (m.emisor_id = %s AND m.receptor_id = %s))
+                AND m.fecha_envio < %s
+                ORDER BY m.fecha_envio DESC
+                LIMIT 10;
+            """
+            self.cursor.execute(sql, (emisor_id, receptor_id, receptor_id, emisor_id, fecha_envio))
+        else:
+            sql = """
+                SELECT 
+                    m.emisor_id, ue.username AS emisor_nombre,
+                    m.receptor_id, ur.username AS receptor_nombre,
+                    m.contenido, m.fecha_envio, m.estat
+                FROM mensajes_usuarios m
+                INNER JOIN usuarisclase ue ON m.emisor_id = ue.id
+                INNER JOIN usuarisclase ur ON m.receptor_id = ur.id
+                WHERE (m.emisor_id = %s AND m.receptor_id = %s) 
+                OR (m.emisor_id = %s AND m.receptor_id = %s)
+                ORDER BY m.fecha_envio DESC
+                LIMIT 10;
+            """
+            self.cursor.execute(sql, (emisor_id, receptor_id, receptor_id, emisor_id))
+    
         resultados = self.cursor.fetchall()
         print(f"Mensajes encontrados: {len(resultados)}")
-        return resultados 
+        return resultados
+
 
     def añadirAlGrupo(self, username):
         sql = (

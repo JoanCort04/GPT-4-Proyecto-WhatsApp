@@ -1,9 +1,12 @@
-// authLogin.js
-import { cridarAPI } from "../modulos/integracion.js";
+// auth.js
+import { cridarAPI, transforma_ID_To_Username } from "../modulos/integracion.js";
+
+// Variable global per guardar el nom l'usuari logeat !!!
+let currentUser = ""; // Guarda el nombre de usuario aquí
+// !!!
 
 document.addEventListener("DOMContentLoaded", inicializarLogin);
 
-// Formulari del html DOM, passar dades al client
 export function inicializarLogin() {
   const loginForm = document.querySelector("form");
   if (!loginForm) return;
@@ -18,13 +21,11 @@ export function inicializarLogin() {
   });
 }
 
-// Validar format de nom usuari
 function validateUsername(username) {
   const nomRegex = /^[a-zA-Z][a-zA-Z0-9_]{3,15}$/;
   return nomRegex.test(username);
 }
 
-// Función para realizar login
 async function rebreUsuari(username, password) {
   const info = {
     username: username,
@@ -35,12 +36,9 @@ async function rebreUsuari(username, password) {
   return usuaris;
 }
 
-// Funcio per obtenir el token, despres del login
 export async function validar_login(username, password) {
   if (!validateUsername(username)) {
-    console.log(
-      "Nom d'usuari invàlid. Ha de començar amb una lletra i tenir entre 4 i 16 caràcters."
-    );
+    console.log("Nom d'usuari invàlid.");
     return;
   }
 
@@ -54,12 +52,17 @@ export async function validar_login(username, password) {
   console.log("Usuario logueado:", response);
 
   // Guarda el token JWT en localStorage
-  localStorage.setItem("jwt", response.access_token);
+  const token = response.access_token;
+  localStorage.setItem("jwt", token);
 
-  // Guarda nom de l'usuari
+  // Decodificamos el token para obtener el ID del usuario
+  const decodedToken = jwt_decode(token);  // Usamos jwt_decode para decodificar el token
+  const userId = decodedToken.id;  // Obtenemos el ID del usuario desde el token
+
+  // Guarda el ID del usuario y el token
   const usuario = {
-    username: username, // username login
-    token: response.access_token,
+    id: userId,  // Guarda el ID del usuario
+    token: token,
   };
 
   localStorage.setItem("usuari", JSON.stringify(usuario));
@@ -71,26 +74,46 @@ export async function validar_login(username, password) {
 export async function verificarToken() {
   const token = localStorage.getItem("jwt");
   if (!token) {
-    // Si no hay token, redirigir al login
     window.location.href = "login.html";
     return;
   }
+
   try {
-    const response = await cridarAPI(
-      "verify-token",
-      "POST",
-      { token: token },
-      token
-    );
+    const response = await cridarAPI("verify-token", "POST", { token: token }, token);
     if (response.message !== "Token is valid") {
-      // Si el token no es válido, redirigir al login
       window.location.href = "login.html";
     } else {
-      // Si el token es válido, permitir acceso a la página
       console.log("Token válido, acceso permitido.");
     }
   } catch (error) {
     console.error("Error al verificar el token:", error);
     window.location.href = "login.html";
+  }
+}
+
+// Función que obtiene el ID del token y luego obtiene el nombre de usuario
+export async function obtenerNombreDeUsuario() {
+  const token = localStorage.getItem("jwt");
+  if (!token) {
+    console.log("No hay token, por favor inicie sesión.");
+    return;
+  }
+
+  try {
+    // Decodificamos el token para obtener el ID del usuario
+    const decodedToken = jwt_decode(token);  // Aquí decodificamos el token
+    const userId = decodedToken.id;  // Obtenemos el ID del usuario
+
+    // importar transforma_ID_To_Username
+    const response = await transforma_ID_To_Username(userId, token);  // Llamada correcta con el ID y el token
+
+    if (response) {
+      currentUser = response;  // Guardamos el nombre de usuario en currentUser
+      console.log("Nombre de usuario:", currentUser);
+    } else {
+      console.log("No se pudo obtener el nombre de usuario.");
+    }
+  } catch (error) {
+    console.error("Error al obtener el nombre de usuario:", error);
   }
 }

@@ -1,13 +1,13 @@
-from fastapi import FastAPI, Depends, HTTPException, status # type: ignore # type: ignore
-from fastapi.security import OAuth2PasswordBearer # type: ignore
-from pydantic import BaseModel # type: ignore
-from jose import JWTError, jwt  # type: ignore # importar pip install python-jose
+from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+from pydantic import BaseModel
+from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from typing import Optional, List
 from fastapi.middleware.cors import CORSMiddleware
 import scrypt
-
 import db
+
 db = db.Connexio()
 
 app = FastAPI()
@@ -16,19 +16,18 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 SECRET_KEY = "mysecretkey"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
-
+class LoginRequest(BaseModel):
+    username: str
+    passwd: str
 class RequestBody(BaseModel):
-    requested : str
+    requested: str
     requested2: str
 
-#Utilizar aquest nomes per login 
 class UsuariLogin(BaseModel):
     id: int
     username: str 
     password: str
-    
-#Utilizar aquest per obtenir les dades dels usuaris
+
 class UsuariPublic(BaseModel):
     id: int
     username: str 
@@ -36,7 +35,6 @@ class UsuariPublic(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
-
 
 class Mensaje(BaseModel):
     emisor_id: int
@@ -46,8 +44,7 @@ class Mensaje(BaseModel):
 class Amigo(BaseModel):
     username: str
     id: int 
-    
-# Bypass politica CORS per iniciar sessió
+
 origins = [
     "http://127.0.0.1:5500",
     "http://localhost:8000",
@@ -61,17 +58,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-# Funcionament bàsic 4/5
 @app.patch("/check")
 def cambiaEstadoLeído_(id_missatge: str, estat: str):
     db.conecta()  
-
-    # afegir la llògica dels tiks. Quan arriba i quan es llegit.
     tick = db.modificaEstatMissatgeUsuarios(id_missatge, estat)
     db.desconecta()
     return tick
-
 
 @app.get("/treuID")
 def treuID(username: str):
@@ -80,16 +72,13 @@ def treuID(username: str):
     db.desconecta()
     return usuariId
 
-# contrari que treu id, treu nom amb la id
 @app.get("/treuNom")
-async def treuNom(id: int):  # Change `username` to `id`
+async def treuNom(id: int):
     db.conecta()
-    usuariNom = db.transforma_Id_a_Username(id)  # Pass id instead of username
+    usuariNom = db.transforma_Id_a_Username(id)
     db.desconecta()
     return usuariNom
 
-
-# Funcionament bàsic 1/5
 @app.get("/llistaamics", response_model=List[UsuariPublic])
 def get_usuaris():
     db.conecta()  
@@ -97,9 +86,7 @@ def get_usuaris():
     db.desconecta()
     return usuarios
 
-
 def verificar_password(password: str, hashed_password: str) -> bool:
-
     parts = hashed_password.split("$")
     if len(parts) != 3:
         return False  
@@ -113,11 +100,8 @@ def verificar_password(password: str, hashed_password: str) -> bool:
 
     return hashed_input_password == stored_key
 
-class LoginRequest(BaseModel):
-    username: str
-    passwd: str
 
-# Login modificat per crear token al iniciar sessio, i recuperar-lo 
+
 @app.post("/login", response_model=Token)
 def login(login_request: LoginRequest):
     db.conecta()
@@ -142,8 +126,6 @@ def login(login_request: LoginRequest):
             user_data = usuariLogeat
 
         user_id = user_data["id"]
-
-        # Generar el token JWT con expiración
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = create_access_token(
             data={"sub": username, "id": user_id}, 
@@ -170,95 +152,58 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 def verify_token(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        return payload
+        user_id = payload.get("id")
+        if user_id is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token no contiene el ID del usuario",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        return user_id
     except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token or expired token",
+            detail="Token inválido o expirado",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
 @app.post("/verify-token")
 def verify_token_endpoint(token_data: dict = Depends(verify_token)):
-    # Si llegamos aquí, el token es válido
     return {"message": "Token is valid"}
 
+@app.get("/obtener-id-usuario")
+def obtener_id_usuario(user_id: int = Depends(verify_token)):
+    return {"user_id": user_id}
 
-#---- 
-# Login anterior
-# @app.post("/login")
-# def login(login_request: LoginRequest):
-#     db.conecta()
-
-#     try:
-#         username = login_request.username
-#         passwd = login_request.passwd
-
-#         # Load hashed password from the database
-#         hashed_password = db.cargaHashedPassword(username)
-#         if not hashed_password:
-#             raise HTTPException(status_code=401, detail="Invalid username or password")
-
-#         # Verify the password
-#         if not verificar_password(passwd, hashed_password):
-#             raise HTTPException(status_code=401, detail="Invalid username or password")
-
-#         # Load user data
-#         usuariLogeat = db.cargaUsuari(username, hashed_password)
-#         if not usuariLogeat:
-#             raise HTTPException(status_code=401, detail="Invalid username or password")
-
-#         return {"user": usuariLogeat}
-
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=str(e))
-
-#     finally:
-#         db.desconecta()
-#----
-
-# Funcionament bàsic 2/5
 @app.get("/grups")
 def autentificarGrups(username: str):
-    db.conecta()  # Conecta a la base de datos
-    
-    # Obtener los grupos del usuario
+    db.conecta()  
     grupos = db.sacaGruposDelUser(username)
     if not grupos:
         db.desconecta()
         raise HTTPException(status_code=404, detail="El usuario no pertenece a ningún grupo")
     
-    # Obtener el primer grupo y sus integrantes
     grupo_id = grupos[0]["grupo_id"]
     integrantes = db.sacaIntegrantesGrupo(grupo_id)
 
-    db.desconecta()  # Desconecta de la base de datos
+    db.desconecta()
 
-    # Retornar grupos e integrantes
     return {
         "grupos": grupos,
         "integrantes": integrantes
     }
 
-
-# Lo seu tendria que ser que emisor/receptor id siguin parametres int
-# El problema es que tenim un usuari amb id 0,
-# solucions eliminar el usuario amb id 0,o canviarli la id a l'ultim
-# per ara no utlizar usuario id 0 per fer proves
 @app.get("/missatgesAmics")
-def recibirMensaje(emisor_id:int, receptor_id:int):
+def recibirMensaje(emisor_id: int, receptor_id: int, fecha_envio: str = None):
     db.conecta()
-
-    # Aseguramos que la validación no rechace el 0
     if emisor_id is None or receptor_id is None:
         return {"error": "Emisor o receptor no válidos"}
-    
-    chatAmic = db.cargaMensajesAmigo(emisor_id, receptor_id)
+
+    chatAmic = db.cargaMensajesAmigo(emisor_id, receptor_id, fecha_envio)
     db.desconecta()
-    
+
     return chatAmic
 
-# Funcionament bàsic 3/5
 @app.post("/missatgesAmics")
 def enviarMensaje(mensaje: Mensaje):
     try:
@@ -269,26 +214,3 @@ def enviarMensaje(mensaje: Mensaje):
     except Exception as e:
         db.desconecta()
         return {"error": f"An error occurred: {str(e)}"}
-
-
-""""
-@app.post("/missatgesGrup")
-async def enviarMissatgeGrup(contenido: Mensaje,usuario_actual: dict = Depends(get_current_user)):
-    db.conecta()
-    try:
-        db.conecta()
-        emisor_id = usuario_actual["user_id"]
-        
-        if db.enviarMensajeGrupo(emisor_id, contenido.contenido, contenido.fecha_envio, contenido.grupo_nom):
-            return {"message": "Mensaje enviado correctamente"}
-        else:
-            raise HTTPException(status_code=400, detail="Error al enviar el mensaje")
-    except Exception as e:
-        print(f"Error en el endpoint: {e}")
-        raise HTTPException(status_code=500, detail="Error interno del servidor")
-    finally:
-        db.desconecta()
-
-@app.get("/missatgesGrup")
-
-"""
