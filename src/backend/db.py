@@ -42,12 +42,12 @@ class Connexio(object):
         sql = "SELECT id FROM usuarisclase WHERE username = %s"
         self.cursor.execute(sql, (username,))
         usuario = self.cursor.fetchone()
-        
+
         if not usuario:
             return False  # Si no se encuentra el usuario, devuelve False
-        
+
         usuario_id = usuario['id']
-        
+
         # Verificar si el usuario está en el grupo
         sql = """
             SELECT 1
@@ -56,9 +56,8 @@ class Connexio(object):
         """
         self.cursor.execute(sql, (usuario_id, grupo_id))
         result = self.cursor.fetchone()
-        
-        return result is not None  # Si la consulta devuelve algo, significa que el usuario está en el grupo
 
+        return result is not None  # Si la consulta devuelve algo, significa que el usuario está en el grupo
 
     def sacaIntegrantesGrupo(self, grupo_id):
         sql = """
@@ -75,28 +74,29 @@ class Connexio(object):
         self.cursor.execute(sql, (grupo_id,))
         ResQuery = self.cursor.fetchall()
         return ResQuery
-    
-
 
     # /grupos
     def sacaGruposDelUser(self, username):
-        sql = (
-            " SELECT gdu.grupo_id , rol"
-            " FROM grupos_de_usuarios gdu "
-            " JOIN usuarisclase u ON gdu.usuario_id = u.id "
-            " WHERE u.username = %s "
-        )
-        self.cursor.execute(sql, (username))
-        ResQuery = self.cursor.fetchall()
-        return ResQuery
+            sql = """
+                SELECT 
+        gdu.grupo_id, 
+        gdu.rol, 
+        g.nom, 
+        g.descripcio, 
+        g.data_creacio, 
+        g.creador_id
+    FROM 
+        grupos_de_usuarios gdu
+    JOIN 
+        grupos g ON gdu.grupo_id = g.id
+    JOIN 
+        usuarisclase u ON gdu.usuario_id = u.id
+        WHERE u.username = %s;
+            """
 
-    def creaGrupos(self, nom, descripcio, creador_id):
-
-        sql = """INSERT INTO grupos(nom, descripcio, creador_id)
-                VALUES (%s, %s, %s, %s)"""
-        self.cursor.execute(sql, (nom, descripcio, creador_id)) #creador el que crida a l'api
-        ResQuery = self.cursor.fetchall()
-        return ResQuery
+            self.cursor.execute(sql, (username))
+            ResQuery = self.cursor.fetchall()
+            return ResQuery
 
     def cargaMensajesAmigos(self):
         sql = """SELECT emisor_id, receptor_id, contenido, fecha_envio, estat FROM  mensajes_usuarios mu 
@@ -205,8 +205,17 @@ class Connexio(object):
         return ResQuery
 
     def sortir_grup(self, grup_id, usuari_id):
-        update_sql = " DELETE FROM grupos_de_usuarios WHERE grupo_id = %s AND usuario_id LIKE = %s "
+        update_sql = """
+            DELETE FROM grupos_de_usuarios 
+            WHERE grupo_id = %s AND usuario_id = %s
+        """
 
         self.cursor.execute(update_sql, (grup_id, usuari_id))
-        ResQuery = self.cursor.fetchall()
-        return ResQuery
+        return self.cursor.rowcount
+
+    def creaGrupos(self, nom, descripcio, creador_id):
+        sql = """INSERT INTO grupos(nom, descripcio, creador_id)
+                VALUES (%s, %s, %s)"""
+
+        self.cursor.execute(sql, (nom, descripcio, creador_id))
+        return self.cursor.lastrowid

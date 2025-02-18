@@ -5,9 +5,9 @@ import { transforma_ID_To_Username } from "../../modulos/integracion.js";
 
 // --- Variables Globales
 let usuarioSeleccionado = null;
-let gruposData = []; // Almacena todos los datos de grupos
+let gruposData = [];
 
-// --- Verificar usuario y cargar datos
+// --- Verificar usuario y cargar datos iniciales
 document.addEventListener("DOMContentLoaded", async () => {
   const token = localStorage.getItem("jwt");
   if (!token) {
@@ -19,22 +19,23 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const usuario = JSON.parse(localStorage.getItem("usuari"));
   if (!usuario || !usuario.username) {
-    console.error("No se encontró el usuario en localStorage.");
+    console.error("Usuario no encontrado en localStorage");
     return;
   }
 
   document.getElementById("nombreUsuario").textContent = usuario.username;
 
   try {
-    // Cargar amigos y grupos al iniciar
+    // Cargar amigos
     const datosAmigos = await cargarLlistaAmics(usuario.username);
-    if (datosAmigos) {
+    if (datosAmigos?.amigos && Array.isArray(datosAmigos.amigos)) {
       mostrarLista(datosAmigos.amigos, "listaAmigos");
     }
 
-    await fetchGrupos(usuario.username); // Carga grupos del usuario logueado
+    // Cargar grupos
+    await fetchGrupos(usuario.username);
   } catch (error) {
-    console.error("Error al cargar datos iniciales:", error);
+    console.error("Error inicial:", error);
   }
 
   document.getElementById("logoutButton")?.addEventListener("click", logout);
@@ -49,11 +50,11 @@ function logout() {
 
 // --- Mostrar mensajes en el chat
 async function mostrarMensajesEnChat(mensajes) {
-  const contenedorMensajes = document.getElementById("contenedorMensajes");
-  contenedorMensajes.innerHTML = ""; // Limpiar el contenedor
+  const contenedor = document.getElementById("contenedorMensajes");
+  contenedor.innerHTML = "";
 
-  if (!mensajes || mensajes.length === 0) {
-    contenedorMensajes.innerHTML = "<p>No hay mensajes</p>";
+  if (!mensajes?.length) {
+    contenedor.innerHTML = "<p>No hay mensajes</p>";
     return;
   }
 
@@ -64,42 +65,35 @@ async function mostrarMensajesEnChat(mensajes) {
     try {
       const username = await transforma_ID_To_Username(mensaje.emisor_id);
       const fecha = new Date(mensaje.fecha_envio).toLocaleString();
-      div.innerHTML = `<strong>${username}:</strong> ${mensaje.contenido} <span class="fecha">(${fecha})</span>`;
+      div.innerHTML = `<strong>${username}:</strong> ${mensaje.contenido} <em>(${fecha})</em>`;
     } catch (error) {
-      console.error("Error al obtener el username:", mensaje.emisor_id, error);
-      div.innerHTML = `<strong>Usuario desconocido:</strong> ${mensaje.contenido}`;
+      div.innerHTML = `<strong>Desconocido:</strong> ${mensaje.contenido}`;
     }
 
-    contenedorMensajes.appendChild(div);
+    contenedor.appendChild(div);
   }
 }
 
-// --- Mostrar lista de amigos y cargar mensajes al hacer clic
+// --- Mostrar listas (amigos/grupos)
 function mostrarLista(lista, idElemento) {
   const contenedor = document.getElementById(idElemento);
   contenedor.innerHTML = "";
 
-  if (!lista || lista.length === 0) {
-    contenedor.innerHTML = "<li>No hay elementos</li>";
+  if (!Array.isArray(lista)) {
+    contenedor.innerHTML = "<li>Error cargando datos</li>";
     return;
   }
 
-  const usuario = JSON.parse(localStorage.getItem("usuari"));
-  const usuarioLogueado = usuario?.username;
+  const usuario = JSON.parse(localStorage.getItem("usuari"))?.username;
 
   lista.forEach((item) => {
     const li = document.createElement("li");
     li.textContent =
-      item.username === usuarioLogueado
-        ? `${item.username} (Tú)`
-        : item.username;
+      item.username === usuario ? `${item.username} (Tú)` : item.username;
     li.style.cursor = "pointer";
 
     li.addEventListener("click", async () => {
       usuarioSeleccionado = item.username;
-      console.log("Usuario seleccionado:", usuarioSeleccionado);
-
-      // Cargar los mensajes del usuario seleccionado
       const mensajes = await rebreMissatges(usuarioSeleccionado);
       mostrarMensajesEnChat(mensajes);
     });
@@ -108,103 +102,188 @@ function mostrarLista(lista, idElemento) {
   });
 }
 
-// --- Cargar y mostrar grupos
+// --- Cargar grupos desde la API
 async function fetchGrupos(username) {
   try {
     const response = await fetch(
       `http://localhost:8000/grups?username=${username}`
     );
-
-    if (!response.ok) throw new Error("Error al obtener los grupos");
+    if (!response.ok) throw new Error("Error HTTP: " + response.status);
 
     const data = await response.json();
-    gruposData = data; // Guardar todos los datos
     renderGrupos(data.grupos);
-
-    // Cargar integrantes del primer grupo por defecto
-    if (data.grupos.length > 0) {
-      fetchIntegrantes(data.grupos[0].grupo_id);
-    }
+    if (data.grupos?.length > 0) fetchIntegrantes(data.grupos[0].grupo_id);
   } catch (error) {
-    console.error("Error al cargar grupos:", error);
+    console.error("Error grupos:", error);
   }
 }
 
-// --- Renderizar la lista de grupos
+// --- Renderizar grupos con botón de salida
 function renderGrupos(grupos) {
-  const listaGrupos = document.getElementById("listaGrupos");
-  listaGrupos.innerHTML = ""; // Limpiar la lista antes de agregar nuevos grupos
+  const lista = document.getElementById("listaGrupos");
+  lista.innerHTML = "";
 
-  if (!grupos || grupos.length === 0) {
-    listaGrupos.innerHTML = "<li>No tienes grupos</li>";
+  if (!Array.isArray(grupos)) {
+    lista.innerHTML = "<li>Error cargando grupos</li>";
     return;
   }
 
   grupos.forEach((grupo) => {
     const li = document.createElement("li");
-    li.textContent = grupo.nom; // Suponiendo que `nom` es el nombre del grupo
-    li.dataset.grupoId = grupo.grupo_id;
-    li.style.cursor = "pointer";
+    li.style.display = "flex";
+    li.style.gap = "10px";
+    li.style.alignItems = "center";
 
-    // Al hacer clic en un grupo, obtenemos los integrantes
-    li.addEventListener("click", () => fetchIntegrantes(grupo.grupo_id));
-    listaGrupos.appendChild(li);
+    // Nombre del grupo
+    const span = document.createElement("span");
+    span.textContent = grupo.nom;
+    li.appendChild(span);
+
+    // Botón para salir
+    const boton = document.createElement("button");
+    boton.textContent = "Salir";
+    boton.style.padding = "4px 8px";
+    boton.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (confirm(`¿Salir de ${grupo.nom}?`)) salirDelGrupo(grupo.grupo_id);
+    });
+
+    li.appendChild(boton);
+    lista.appendChild(li);
   });
 }
 
-// --- Obtener y mostrar integrantes de un grupo
+// --- Salir de un grupo
+async function salirDelGrupo(grupoId) {
+  try {
+    const response = await fetch(
+      `http://localhost:8000/grupos/${grupoId}/salir`,
+      {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${localStorage.getItem("jwt")}` },
+      }
+    );
+
+    if (!response.ok) throw new Error(await response.text());
+
+    // Recargar lista
+    const usuario = JSON.parse(localStorage.getItem("usuari")).username;
+    await fetchGrupos(usuario);
+    alert("Has salido del grupo");
+  } catch (error) {
+    console.error("Error saliendo:", error);
+    alert("Error al salir: " + error.message);
+  }
+}
+
+// --- Cargar integrantes de grupo
 async function fetchIntegrantes(grupoId) {
   try {
     const response = await fetch(
       `http://localhost:8000/grupos/${grupoId}/integrantes`
     );
-
-    if (!response.ok) throw new Error("Error al obtener integrantes");
+    if (!response.ok) throw new Error("Error HTTP: " + response.status);
 
     const data = await response.json();
     renderIntegrantes(data.integrantes);
   } catch (error) {
-    console.error("Error cargando integrantes:", error);
+    console.error("Error integrantes:", error);
   }
 }
 
-// --- Renderizar la lista de integrantes
+// --- Mostrar integrantes
 function renderIntegrantes(integrantes) {
   const lista = document.getElementById("listaIntegrantes");
   lista.innerHTML = "";
 
-  if (!integrantes || integrantes.length === 0) {
-    lista.innerHTML = "<li>No hay integrantes</li>";
-    return;
+  if (Array.isArray(integrantes)) {
+    integrantes.forEach((integrante) => {
+      const li = document.createElement("li");
+      li.textContent = integrante.username;
+      lista.appendChild(li);
+    });
   }
-
-  integrantes.forEach((integrante) => {
-    const li = document.createElement("li");
-    li.textContent = integrante.username;
-    lista.appendChild(li);
-  });
 }
 
-// --- Enviar mensaje
-document
-  .getElementById("enviarMensajeButton")
-  ?.addEventListener("click", async () => {
-    if (!usuarioSeleccionado) {
-      console.error("No se ha seleccionado ningún usuario.");
-      return;
+// --- Crear Grupo
+async function crearGrupo(nombre, descripcion) {
+  try {
+    const usuario = JSON.parse(localStorage.getItem("usuari"));
+
+    if (!usuario?.id) {
+      throw new Error("Usuario no identificado");
     }
 
-    const contenidoMensaje = document.getElementById("contenidoMensaje").value;
-    if (!contenidoMensaje) {
-      console.error("El mensaje está vacío.");
+    const response = await fetch("http://localhost:8000/grupos/crear", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("jwt")}`,
+      },
+      body: JSON.stringify({
+        nom: nombre,
+        descripcio: descripcion,
+        usuari_id: usuario.id, // Usamos el ID del usuario logueado
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.detail || "Error al crear el grupo");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error creando grupo:", error);
+    throw error;
+  }
+}
+
+// --- Event listener para el botón de crear grupo
+document
+  .getElementById("crearGrupoButton")
+  ?.addEventListener("click", async () => {
+    const nombreInput = document.getElementById("nombreGrupo");
+    const descripcionInput = document.getElementById("descripcionGrupo");
+
+    const nombre = nombreInput.value.trim();
+    const descripcion = descripcionInput.value.trim();
+
+    if (!nombre || !descripcion) {
+      alert("¡Debes completar todos los campos!");
       return;
     }
 
     try {
-      await enviarMissatges(usuarioSeleccionado, contenidoMensaje);
-      console.log("Mensaje enviado a:", usuarioSeleccionado);
-      document.getElementById("contenidoMensaje").value = ""; // Limpiar el campo
+      const resultado = await crearGrupo(nombre, descripcion);
+
+      // Limpiar campos
+      nombreInput.value = "";
+      descripcionInput.value = "";
+
+      // Actualizar lista de grupos
+      const usuario = JSON.parse(localStorage.getItem("usuari"));
+      await fetchGrupos(usuario.username);
+
+      alert(`Grupo "${nombre}" creado exitosamente!`);
     } catch (error) {
-      console.error("Error al enviar el mensaje:", error);
+      alert(`Error: ${error.message}`);
+    }
+  });
+
+// --- Enviar mensajes
+document
+  .getElementById("enviarMensajeButton")
+  .addEventListener("click", async () => {
+    const mensaje = document.getElementById("contenidoMensaje").value.trim();
+    if (!mensaje || !usuarioSeleccionado) return;
+
+    try {
+      await enviarMissatges(usuarioSeleccionado, mensaje);
+      document.getElementById("contenidoMensaje").value = "";
+      const nuevosMensajes = await rebreMissatges(usuarioSeleccionado);
+      mostrarMensajesEnChat(nuevosMensajes);
+    } catch (error) {
+      console.error("Error enviando:", error);
     }
   });

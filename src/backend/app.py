@@ -241,27 +241,11 @@ def autentificarGrups(username: str):
     }
 
 
-@app.get("/grups/{grupo_id}/integrantes")
-def obtenerIntegrantes(grupo_id: int, username: str):
-    db.conecta()  # Conecta a la base de datos
-
-    # Verificar si el usuario está en el grupo
-    usuario_en_grupo = db.isUsuarioEnGrupo(username, grupo_id)
-    if not usuario_en_grupo:
-        db.desconecta()
-        raise HTTPException(status_code=403, detail="El usuario no está en este grupo")
-
-    # Obtener los integrantes del grupo
+@app.get("/grupos/{grupo_id}/integrantes")
+def obtener_integrantes(grupo_id: int):
+    db.conecta()
     integrantes = db.sacaIntegrantesGrupo(grupo_id)
-    if not integrantes:
-        db.desconecta()
-        raise HTTPException(
-            status_code=404, detail="No se encontraron integrantes para este grupo"
-        )
-
-    db.desconecta()  # Desconecta de la base de datos
-
-    # Retornar los integrantes
+    db.desconecta()
     return {"integrantes": integrantes}
 
 
@@ -316,3 +300,55 @@ async def enviarMissatgeGrup(contenido: Mensaje,usuario_actual: dict = Depends(g
 @app.get("/missatgesGrup")
 
 """
+@app.delete("/grupos/{grupo_id}/salir")
+async def salir_del_grupo(
+    grupo_id: int,
+    usuario_id: str
+):
+    if not usuario_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Usuario no autenticado"
+        )
+    db.conecta()
+    try:
+        resultado = db.sortir_grup(grupo_id, usuario_id)
+        if db.cursor.rowcount == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="El usuario no está en el grupo o el grupo no existe",
+            )
+
+        db.connection.commit()  # ¡Importante! Confirmar cambios
+
+        return {"mensaje": "Has salido del grupo correctamente"}
+
+    except Exception as e:
+        db.connection.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al salir del grupo: {str(e)}",
+        )
+    finally:
+        db.desconecta()
+
+
+class GrupoCreate(BaseModel):
+    nom: str
+    descripcio: str
+    usuari_id: int  # Added field
+
+
+@app.post("/grupos/crear")
+async def crear_grupo(grupo_data: GrupoCreate):
+    db.conecta()
+    try:
+        # Pass usuari_id from request body
+        grupo_id = db.creaGrupos(
+            grupo_data.nom, grupo_data.descripcio, grupo_data.usuari_id
+        )
+        return {"grupo_id": grupo_id}
+    except Exception as e:
+        db.connection.rollback()  # Optional but recommended
+        return {"error": str(e)}
+    finally:
+        db.desconecta()
