@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../css/fonts.css">
+</head>
+
+<body class="flex items-center justify-center h-screen bg-gradient-to-r from-[#003366] via-[#1a3b5d] to-[#336699]">
+    <div class="w-full max-w-sm p-6 bg-[#1b263b] rounded-lg shadow-md">
+        <header class="text-center mb-6">
+            <h1 class="text-3xl font-bold text-[#e0e1dd] font-parkinsans">
+                Capybara Chat
+            </h1>
+        </header>
+        <h2 class="text-2xl font-bold text-center text-[#e0e1dd] mb-6 font-parkinsans">
+            Iniciar Sesión
+        </h2>
+        <form id="login-form" class="space-y-4">
+            <div>
+                <label for="username" class="block text-sm font-medium text-[#e0e1dd] font-outfit">
+                    Usuario:
+                </label>
+                <input type="text" id="username" name="username" required
+                    class="w-full px-4 py-2 mt-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#415a77] font-gabarito" />
+            </div>
+            <div>
+                <label for="password" class="block text-sm font-medium text-[#e0e1dd] font-outfit">
+                    Contraseña:
+                </label>
+                <input type="password" id="password" name="password" required
+                    class="w-full px-4 py-2 mt-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#415a77] font-gabarito" />
+            </div>
+            <button type="submit"
+                class="w-full px-4 py-2 font-bold text-white bg-[#415a77] rounded-lg hover:bg-[#778da9] focus:outline-none focus:ring-2 focus:ring-[#415a77] font-outfit">
+                Ingresar
+            </button>
+            <p id="error-message" class="hidden text-red-500 text-center font-outfit"></p>
+        </form>
+    </div>
+
+    <!-- Importar el módulo authLogin.js -->
+    <script type="module">
+        import { inicializarLogin } from "../modulos/authLogin.js";
+
+        // Inicializar el formulario de login
+        document.addEventListener("DOMContentLoaded", () => {
+            inicializarLogin();
+        });
+
+        // Función para mostrar mensajes de error
+        function showError(message) {
+            const errorMessage = document.getElementById("error-message");
+            errorMessage.textContent = message;
+            errorMessage.classList.remove("hidden");
+        }
+
+        // Sobrescribir la función de validación del login para mostrar errores en la interfaz
+        window.validar_login = async (username, password) => {
+            try {
+                await validar_login(username, password);
+            } catch (error) {
+                showError(error.message || "Error al iniciar sesión");
+            }
+        };
+    </script>
+</body>
+
+</html>

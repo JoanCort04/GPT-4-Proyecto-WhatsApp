@@ -3,6 +3,20 @@ import { cargarLlistaAmics } from "../../modulos/grupos.js";
 import { rebreMissatges, enviarMissatges } from "../../modulos/mensajes.js";
 import { transforma_ID_To_Username } from "../../modulos/integracion.js";
 
+function generarAmigoHTML(amigo) {
+  return `
+    <div class="flex space-x-3">
+      <div class="w-10 h-10 bg-blau-fosc rounded-full flex items-center justify-center font-semibold">
+        ${amigo.id}
+      </div>
+      <div>
+        <p class="text-gris-clar font-semibold">${amigo.username}</p>
+        <p class="text-blau-clar">${amigo.mensaje}</p>
+      </div>
+    </div>
+  `;
+}
+
 // --- Variables Globales
 let usuarioSeleccionado = null;
 let gruposData = [];

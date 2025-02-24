@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capybara Chat</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen p-4">
+    <!-- Header -->
+    <header class="bg-white shadow-md rounded-lg p-4 mb-4">
+        <div class="flex justify-between items-center">
+            <h1 class="text-2xl font-bold">Capybara Chat</h1>
+            <button id="logoutButton" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Cerrar
+                Sesión</button>
+        </div>
+        <p class="mt-2" id="nombreUsuario">Usuario</p>
+    </header>
+
+    <!-- Main Content -->
+    <main class="grid grid-cols-3 gap-4">
+        <!-- Amigos List -->
+        <section class="col-span-1 bg-white rounded-lg p-4 shadow-md">
+            <h2 class="text-xl font-semibold mb-4">Amigos</h2>
+            <ul id="listaAmigos" class="space-y-2 max-h-96 overflow-y-auto">
+                <!-- Friends will be dynamically added here -->
+            </ul>
+        </section>
+
+        <!-- Grupos List -->
+        <section class="col-span-1 bg-white rounded-lg p-4 shadow-md">
+            <h2 class="text-xl font-semibold mb-4">Grupos</h2>
+            <ul id="listaGrupos" class="space-y-2 max-h-96 overflow-y-auto">
+                <!-- Groups will be dynamically added here -->
+            </ul>
+        </section>
+
+        <!-- Chat Section -->
+        <section class="col-span-1 bg-white rounded-lg p-4 shadow-md">
+            <h2 class="text-xl font-semibold mb-4" id="chatTitle">Chat</h2>
+            <div id="contenedorMensajes" class="max-h-96 overflow-y-auto border border-gray-300 p-4 mb-4">
+                <!-- Messages will be dynamically added here -->
+            </div>
+            <div class="flex space-x-2">
+                <input type="text" id="contenidoMensaje" placeholder="Escribe un mensaje..."
+                    class="flex-grow border border-gray-300 rounded p-2">
+                <button id="enviarMensajeButton"
+                    class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Enviar</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Crear Grupo Modal -->
+    <div id="crearGrupoModal" class="fixed inset-0 hidden flex items-center justify-center bg-gray-700 bg-opacity-50">
+        <div class="bg-white p-8 rounded-lg shadow-lg">
+            <h3 class="text-xl font-semibold mb-4">Crear Nuevo Grupo</h3>
+            <div class="mb-4">
+                <label for="nombreGrupo" class="block mb-1">Nombre del grupo:</label>
+                <input type="text" id="nombreGrupo" class="w-full border border-gray-300 rounded p-2">
+            </div>
+            <div class="mb-4">
+                <label for="descripcionGrupo" class="block mb-1">Descripción:</label>
+                <textarea id="descripcionGrupo" class="w-full border border-gray-300 rounded p-2"></textarea>
+            </div>
+            <div class="flex justify-end">
+                <button id="crearGrupoButton"
+                    class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 mr-2">Crear</button>
+                <button id="cerrarModalButton"
+                    class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Integrantes de Grupo -->
+    <section class="bg-white rounded-lg p-4 shadow-md mt-4 hidden" id="integrantesSection">
+        <h2 class="text-xl font-semibold mb-4">Integrantes del Grupo</h2>
+        <ul id="listaIntegrantes" class="space-y-2 max-h-96 overflow-y-auto">
+            <!-- Group members will be dynamically added here -->
+        </ul>
+    </section>
+
+    <!-- Scripts -->
+    <script src="../../modulos/auth.js"></script>
+    <script src="../../modulos/grupos.js"></script>
+    <script src="../../modulos/mensajes.js"></script>
+    <script src="../../modulos/integracion.js"></script>
+    <script src="chat.js"></script>
+</body>
+
+</html>
