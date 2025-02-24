@@ -6,17 +6,28 @@ from datetime import datetime, timedelta
 from typing import Optional, List
 from fastapi.middleware.cors import CORSMiddleware
 import scrypt
-
 import db
 db = db.Connexio()
 
-app = FastAPI()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 SECRET_KEY = "mysecretkey"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
+app = FastAPI()
 
+# Permite solicitudes desde tu frontend
+origins = [
+    "http://127.0.0.1:5500",  # Permite solo el origen de tu frontend
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  # Permite estos orígenes
+    allow_credentials=True,
+    allow_methods=["*"],  # Permite todos los métodos
+    allow_headers=["*"],  # Permite todos los encabezados
+)
 
 class RequestBody(BaseModel):
     requested : str
@@ -48,18 +59,6 @@ class Amigo(BaseModel):
     id: int 
 
 # Bypass politica CORS per iniciar sessió
-origins = [
-    "http://127.0.0.1:5500",
-    "http://localhost:8000",
-]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 
 # Funcionament bàsic 4/5
@@ -124,6 +123,9 @@ def login(login_request: LoginRequest):
     try:
         username = login_request.username
         passwd = login_request.passwd
+        print("Login attempt:", username, passwd)
+
+
 
         hashed_password = db.cargaHashedPassword(username)
         if not hashed_password:
@@ -249,10 +251,6 @@ def obtener_integrantes(grupo_id: int):
     return {"integrantes": integrantes}
 
 
-# Lo seu tendria que ser que emisor/receptor id siguin parametres int
-# El problema es que tenim un usuari amb id 0,
-# solucions eliminar el usuario amb id 0,o canviarli la id a l'ultim
-# per ara no utlizar usuario id 0 per fer proves
 @app.get("/missatgesAmics")
 def recibirMensaje(emisor_id:int, receptor_id:int):
     db.conecta()
@@ -305,10 +303,6 @@ async def salir_del_grupo(
     grupo_id: int,
     usuario_id: str
 ):
-    if not usuario_id:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Usuario no autenticado"
-        )
     db.conecta()
     try:
         resultado = db.sortir_grup(grupo_id, usuario_id)
@@ -317,8 +311,6 @@ async def salir_del_grupo(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="El usuario no está en el grupo o el grupo no existe",
             )
-
-        db.connection.commit()  # ¡Importante! Confirmar cambios
 
         return {"mensaje": "Has salido del grupo correctamente"}
 

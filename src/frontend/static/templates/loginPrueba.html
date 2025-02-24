@@ -40,33 +40,43 @@
             </button>
             <p id="error-message" class="hidden text-red-500 text-center font-outfit"></p>
         </form>
-    </div>
+    </div>    
+</body>
 
-    <!-- Importar el módulo authLogin.js -->
-    <script type="module">
-        import { inicializarLogin } from "../modulos/authLogin.js";
+<script type="module">
+    import { validar_login } from "../../modulos/auth.js";
 
-        // Inicializar el formulario de login
-        document.addEventListener("DOMContentLoaded", () => {
-            inicializarLogin();
-        });
+    document.addEventListener("DOMContentLoaded", () => {
+        const loginForm = document.getElementById("login-form");
 
-        // Función para mostrar mensajes de error
-        function showError(message) {
-            const errorMessage = document.getElementById("error-message");
-            errorMessage.textContent = message;
-            errorMessage.classList.remove("hidden");
+        if (!loginForm) {
+            console.error("Formulario de login no encontrado");
+            return;
         }
 
-        // Sobrescribir la función de validación del login para mostrar errores en la interfaz
-        window.validar_login = async (username, password) => {
+        loginForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            const errorMessage = document.getElementById("error-message");
+
+            errorMessage.classList.add("hidden"); // Oculta el mensaje de error al intentar de nuevo
+
             try {
-                await validar_login(username, password);
+                const token = await validar_login(username, password);
+                if (!token) {
+                    errorMessage.textContent = "Usuario o contraseña incorrectos";
+                    errorMessage.classList.remove("hidden");
+                }
             } catch (error) {
-                showError(error.message || "Error al iniciar sesión");
+                console.error("Error en el inicio de sesión:", error);
+                errorMessage.textContent = "Error en el servidor. Inténtalo de nuevo.";
+                errorMessage.classList.remove("hidden");
             }
-        };
-    </script>
-</body>
+        });
+    });
+</script>
+
 
 </html>

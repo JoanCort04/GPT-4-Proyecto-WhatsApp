@@ -1,9 +1,8 @@
-// authLogin.js
+
 import { cridarAPI } from "../modulos/integracion.js";
 
 document.addEventListener("DOMContentLoaded", inicializarLogin);
 
-// Formulari del html DOM, passar dades al client
 export function inicializarLogin() {
   const loginForm = document.querySelector("form");
   if (!loginForm) return;
@@ -18,24 +17,24 @@ export function inicializarLogin() {
   });
 }
 
-// Validar format de nom usuari
 function validateUsername(username) {
   const nomRegex = /^[a-zA-Z][a-zA-Z0-9_]{3,15}$/;
   return nomRegex.test(username);
 }
 
-// Función para realizar login
+
 async function rebreUsuari(username, password) {
   const info = {
     username: username,
     passwd: password,
   };
 
+  console.log("📤 Enviando datos al backend:", JSON.stringify(info));
   const usuaris = await cridarAPI("login", "POST", info);
   return usuaris;
 }
 
-// Funcio per obtenir el token, despres del login
+
 export async function validar_login(username, password) {
   if (!validateUsername(username)) {
     console.log(
@@ -53,44 +52,45 @@ export async function validar_login(username, password) {
 
   console.log("Usuario logueado:", response);
 
-  // Guarda el token JWT en localStorage
+
   localStorage.setItem("jwt", response.access_token);
 
-  // Guarda nom de l'usuari
   const usuario = {
-    username: username, // username login
+    username: username,
     token: response.access_token,
   };
 
   localStorage.setItem("usuari", JSON.stringify(usuario));
 
-  // Redirigir al chat
   window.location.href = "chat.html";
 }
 
+
+
 export async function verificarToken() {
   const token = localStorage.getItem("jwt");
-  if (!token) {
-    // Si no hay token, redirigir al login
-    window.location.href = "login.html";
-    return;
-  }
+
+  
   try {
-    const response = await cridarAPI(
-      "verify-token",
-      "POST",
-      { token: token },
-      token
-    );
-    if (response.message !== "Token is valid") {
-      // Si el token no es válido, redirigir al login
-      window.location.href = "login.html";
-    } else {
-      // Si el token es válido, permitir acceso a la página
-      console.log("Token válido, acceso permitido.");
+    if (!token) {
+      console.error("No token found");
+      window.location.href = "loginPrueba.html";
+      return false;
     }
+
+    const response = await cridarAPI("verify-token", "POST", { token }, token);
+
+    if (response.message !== "Token is valid") {
+      throw new Error("Invalid token response");
+    }
+
+    console.log("Token válido");
+    return true;
   } catch (error) {
-    console.error("Error al verificar el token:", error);
-    window.location.href = "login.html";
+    console.error("Token verification failed:", error);
+    localStorage.removeItem("jwt");
+    localStorage.removeItem("usuari");
+    window.location.href = "loginPrueba.html";
+    return false;
   }
 }

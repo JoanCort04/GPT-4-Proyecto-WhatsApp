@@ -1,6 +1,5 @@
 $(document).ready(function () {
   function toggleTheme(isDark) {
-    // Cambiar los colores del texto en el footer
     $(
       "footer p.text-gris-clar.font-semibold, footer p.text-blau-clar.text-sm"
     ).css("color", "green");
@@ -12,7 +11,6 @@ $(document).ready(function () {
     const $tabGroups = $("#tabGroups");
 
     if (isDark) {
-      // Modo oscuro
       $("body")
         .removeClass("bg-blau-molt-clar text-black")
         .addClass("bg-negre text-gris-clar");

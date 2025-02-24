@@ -11,10 +11,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="../css/fonts.css">
     <script src="https://code.jquery.com/mobile/1.5.0/jquery.mobile.min.js"></script>    
+    <script type="module" src="chatFinal.js"></script>
     <script src="../scripts/chat.js"></script>
-    <script src="chat.js"></script>
-    <script>
 
+    <script>
         tailwind.config = {
             theme: {
                 screens: {
@@ -85,23 +85,6 @@
                     <p class="text-blau-clar">Hola! Tot bé, i tu?</p>
                 </div>
             </div>
-            <div class="flex space-x-3">
-                <div class="w-10 h-10 bg-blau-fosc rounded-full flex items-center justify-center font-semibold">
-                    U2
-                </div>
-                <div>
-                    <p class="text-gris-clar font-semibold">Usuari 2</p>
-                    <p class="text-blau-clar">Hola! Tot bé, i tu?</p>
-                </div>
-            </div>
-            <div class="flex space-x-3">
-                <div class="w-10 h-10 bg-blau-fosc rounded-full flex items-center justify-center font-semibold">
-                    U3
-                </div>
-                <div>
-                    <p class="text-gris-clar font-semibold">Usuari 3</p>
-                    <p class="text-blau-clar">Hola! Tot bé, i tu?</p>
-                </div>
             </div>
         </section>
 
@@ -212,12 +195,7 @@
             </div>
         </div>
     </aside>
-
-    <script>
-        document.getElementById('mobileMenu').addEventListener('click', () => {
-            document.getElementById('mobileSidebar').classList.toggle('-translate-x-full');
-        });
-    </script>
+    
 </body>
 
 </html>
